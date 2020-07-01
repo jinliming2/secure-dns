@@ -64,7 +64,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 	for _, custom := range client.custom {
 		if custom.matcher(qName) {
 			c = &custom.resolver
-			client.logger.Debugf("using %s for %s [condition]", (*c).string(), qName)
+			client.logger.Debugf("using %s for %s [condition]", (*c).String(), qName)
 			break
 		}
 	}
@@ -89,9 +89,9 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 
 		// TODO: select randomly
 		c = &client.upstream[0]
-		client.logger.Debugf("using %s for %s", (*c).string(), qName)
+		client.logger.Debugf("using %s for %s", (*c).String(), qName)
 	}
 
-	response := (*c).resolve(r, useTCP)
+	response := (*c).Resolve(r, useTCP)
 	w.WriteMsg(response)
 }

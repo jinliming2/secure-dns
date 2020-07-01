@@ -4,14 +4,15 @@ import (
 	"context"
 	"strings"
 
+	"github.com/jinliming2/encrypt-dns/client/resolver"
 	"github.com/jinliming2/encrypt-dns/config"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )
 
 type dnsClient interface {
-	string() string
-	resolve(*dns.Msg, bool) *dns.Msg
+	String() string
+	Resolve(*dns.Msg, bool) *dns.Msg
 }
 
 type customResolver struct {
@@ -43,7 +44,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			CustomECS: append(tls.CustomECS, conf.Config.CustomECS...),
 			NoECS:     conf.Config.NoECS || tls.NoECS,
 		}
-		c := newTLSDNSClient(tls.Host, tls.Port, conf.Config.Timeout, dnsConfig)
+		c := resolver.NewTLSDNSClient(tls.Host, tls.Port, conf.Config.Timeout, dnsConfig)
 
 		if len(tls.Domain)+len(tls.Suffix) > 0 {
 			logger.Debugf("new TLS resolver: %s:%d (for specified domain or suffix use)", tls.Host, tls.Port)
@@ -60,7 +61,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			CustomECS: append(https.CustomECS, conf.Config.CustomECS...),
 			NoECS:     conf.Config.NoECS || https.NoECS,
 		}
-		c := newHTTPSDNSClient(https.Host, https.Port, https.Path, https.Google, https.Cookie, conf.Config.Timeout, dnsConfig)
+		c := resolver.NewHTTPSDNSClient(https.Host, https.Port, https.Path, https.Google, https.Cookie, conf.Config.Timeout, dnsConfig)
 
 		if len(https.Domain)+len(https.Suffix) > 0 {
 			logger.Debugf("new HTTPS resolver: https://%s:%d%s (for specified domain or suffix use)", https.Host, https.Port, https.Path)
@@ -77,7 +78,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			CustomECS: append(traditional.CustomECS, conf.Config.CustomECS...),
 			NoECS:     conf.Config.NoECS || traditional.NoECS,
 		}
-		c := newTraditionalDNSClient(traditional.Host, traditional.Port, conf.Config.Timeout, dnsConfig)
+		c := resolver.NewTraditionalDNSClient(traditional.Host, traditional.Port, conf.Config.Timeout, dnsConfig)
 
 		if traditional.Bootstrap {
 			logger.Debugf("new traditional resolver: %s:%d (for bootstrap)", traditional.Host, traditional.Port)
@@ -100,7 +101,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 	}
 
 	for domain, b := range conf.Hosts {
-		c := newHostsDNSClient(b)
+		c := resolver.NewHostsDNSClient(b)
 		if strings.HasPrefix(domain, "*.") {
 			domain = strings.TrimLeft(domain, "*.")
 			logger.Debugf("new HOSTS resolver: %s (for wildcard domain)", domain)

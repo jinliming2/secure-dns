@@ -1,4 +1,4 @@
-package client
+package ecs
 
 import (
 	"net"
@@ -6,7 +6,8 @@ import (
 	"github.com/miekg/dns"
 )
 
-func setECS(r *dns.Msg, noECS bool, ecs []net.IP) {
+// SetECS set EDNS Client Subnet for specified DNS request Message
+func SetECS(r *dns.Msg, noECS bool, ecs []net.IP) {
 	opt := r.IsEdns0()
 	var eDNS0Subnet *dns.EDNS0_SUBNET
 

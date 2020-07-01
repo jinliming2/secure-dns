@@ -1,4 +1,4 @@
-package client
+package resolver
 
 import (
 	"fmt"
@@ -6,19 +6,22 @@ import (
 	"github.com/miekg/dns"
 )
 
-type hostsDNSClient struct {
+// HostsDNSClient resolves DNS with Hosts
+type HostsDNSClient struct {
 	records map[string][]string
 }
 
-func newHostsDNSClient(records map[string][]string) *hostsDNSClient {
-	return &hostsDNSClient{records: records}
+// NewHostsDNSClient returns a new hosts DNS client
+func NewHostsDNSClient(records map[string][]string) *HostsDNSClient {
+	return &HostsDNSClient{records: records}
 }
 
-func (client *hostsDNSClient) string() string {
+func (client *HostsDNSClient) String() string {
 	return "HOSTS resolver"
 }
 
-func (client *hostsDNSClient) resolve(request *dns.Msg, useTCP bool) (reply *dns.Msg) {
+// Resolve DNS
+func (client *HostsDNSClient) Resolve(request *dns.Msg, useTCP bool) (reply *dns.Msg) {
 	reply = &dns.Msg{
 		MsgHdr: dns.MsgHdr{
 			Id:       request.Id,
