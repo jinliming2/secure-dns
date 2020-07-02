@@ -42,9 +42,9 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 		c := resolver.NewTraditionalDNSClient(traditional.Host, traditional.Port, conf.Config.Timeout, dnsConfig)
 
 		if traditional.Bootstrap {
-			logger.Debugf("new traditional resolver: %s:%d (for bootstrap)", traditional.Host, traditional.Port)
+			logger.Debugf("new traditional resolver: %s (for bootstrap)", c.String())
 			if client.bootstrap != nil {
-				logger.Warnf("only one bootstrap resolver allowed, ignoring %s:%d...", traditional.Host, traditional.Port)
+				logger.Warnf("only one bootstrap resolver allowed, ignoring %s...", c.String())
 				continue
 			}
 			if len(traditional.Domain)+len(traditional.Suffix) > 0 {
@@ -52,11 +52,11 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			}
 			client.bootstrap = c
 		} else if len(traditional.Domain)+len(traditional.Suffix) > 0 {
-			logger.Debugf("new traditional resolver: %s:%d (for specified domain or suffix use)", traditional.Host, traditional.Port)
+			logger.Debugf("new traditional resolver: %s (for specified domain or suffix use)", c.String())
 			cr := newCustomResolver(c, traditional.Domain, traditional.Suffix)
 			client.custom = append(client.custom, cr)
 		} else {
-			logger.Debugf("new traditional resolver: %s:%d", traditional.Host, traditional.Port)
+			logger.Debugf("new traditional resolver: %s", c.String())
 			client.upstream = append(client.upstream, c)
 		}
 	}
@@ -73,11 +73,11 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 		}
 
 		if len(tls.Domain)+len(tls.Suffix) > 0 {
-			logger.Debugf("new TLS resolver: %s:%d (for specified domain or suffix use)", tls.Host, tls.Port)
+			logger.Debugf("new TLS resolver: %s (for specified domain or suffix use)", c.String())
 			cr := newCustomResolver(c, tls.Domain, tls.Suffix)
 			client.custom = append(client.custom, cr)
 		} else {
-			logger.Debugf("new TLS resolver: %s:%d", tls.Host, tls.Port)
+			logger.Debugf("new TLS resolver: %s", c.String())
 			client.upstream = append(client.upstream, c)
 		}
 	}
@@ -87,14 +87,19 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			CustomECS: append(https.CustomECS, conf.Config.CustomECS...),
 			NoECS:     conf.Config.NoECS || https.NoECS,
 		}
-		c := resolver.NewHTTPSDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Google, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+		var c resolver.DNSClient
+		if https.Google {
+			c = resolver.NewHTTPSGoogleDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+		} else {
+			c = resolver.NewHTTPSDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+		}
 
 		if len(https.Domain)+len(https.Suffix) > 0 {
-			logger.Debugf("new HTTPS resolver: https://%s:%d%s (for specified domain or suffix use)", https.Host, https.Port, https.Path)
+			logger.Debugf("new HTTPS resolver: %s (for specified domain or suffix use)", c.String())
 			cr := newCustomResolver(c, https.Domain, https.Suffix)
 			client.custom = append(client.custom, cr)
 		} else {
-			logger.Debugf("new HTTPS resolver: https://%s:%d%s", https.Host, https.Port, https.Path)
+			logger.Debugf("new HTTPS resolver: %s", c.String())
 			client.upstream = append(client.upstream, c)
 		}
 	}

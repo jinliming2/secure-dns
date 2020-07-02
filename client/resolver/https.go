@@ -17,7 +17,7 @@ type HTTPSDNSClient struct {
 }
 
 // NewHTTPSDNSClient returns a new HTTPS DNS client
-func NewHTTPSDNSClient(host []string, port uint16, hostname string, path string, google, cookie bool, timeout uint, settings config.DNSSettings, bootstrap DNSClient) *HTTPSDNSClient {
+func NewHTTPSDNSClient(host []string, port uint16, hostname string, path string, cookie bool, timeout uint, settings config.DNSSettings, bootstrap DNSClient) *HTTPSDNSClient {
 	return &HTTPSDNSClient{
 		host:        host,
 		port:        port,
