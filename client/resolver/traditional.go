@@ -55,7 +55,7 @@ func (client *TraditionalDNSClient) String() string {
 }
 
 // Resolve DNS
-func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.Msg {
+func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
 	var c *dns.Client
 	if useTCP {
 		c = client.tcpClient
@@ -77,7 +77,7 @@ func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.
 			Question: make([]dns.Question, len(request.Question)),
 		}
 		copy(reply.Question, request.Question)
-		return reply
+		return reply, fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
 	}
-	return res
+	return res, nil
 }

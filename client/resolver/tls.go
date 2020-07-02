@@ -47,9 +47,12 @@ func NewTLSDNSClient(host []string, port uint16, hostname string, timeout uint, 
 		// TODO: do not resolve all names at bootstrap
 		msg := new(dns.Msg)
 		msg.SetQuestion(dns.Fqdn(h), dns.TypeA)
-		res := bootstrap.Resolve(msg, false)
-		if res.Rcode != dns.RcodeSuccess || len(res.Answer) == 0 {
-			res = bootstrap.Resolve(msg, true)
+		res, err := bootstrap.Resolve(msg, false)
+		if err != nil || res.Rcode != dns.RcodeSuccess || len(res.Answer) == 0 {
+			res, err = bootstrap.Resolve(msg, true)
+			if err != nil {
+				continue
+			}
 		}
 		addressList := make([]string, len(res.Answer))
 		index := 0
@@ -95,7 +98,7 @@ func (client *TLSDNSClient) String() string {
 }
 
 // Resolve DNS
-func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.Msg {
+func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
 	// TODO: use random hostname
 	address := client.hostnames[0]
@@ -113,7 +116,7 @@ func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.Msg {
 			Question: make([]dns.Question, len(request.Question)),
 		}
 		copy(reply.Question, request.Question)
-		return reply
+		return reply, fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
 	}
-	return res
+	return res, nil
 }

@@ -21,7 +21,7 @@ func (client *HostsDNSClient) String() string {
 }
 
 // Resolve DNS
-func (client *HostsDNSClient) Resolve(request *dns.Msg, useTCP bool) (reply *dns.Msg) {
+func (client *HostsDNSClient) Resolve(request *dns.Msg, useTCP bool) (reply *dns.Msg, _ error) {
 	reply = &dns.Msg{
 		MsgHdr: dns.MsgHdr{
 			Id:       request.Id,

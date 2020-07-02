@@ -93,6 +93,9 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 		client.logger.Debugf("using %s for %s", (*c).String(), qName)
 	}
 
-	response := (*c).Resolve(r, useTCP)
+	response, err := (*c).Resolve(r, useTCP)
+	if err != nil {
+		client.logger.Warn(err.Error())
+	}
 	w.WriteMsg(response)
 }

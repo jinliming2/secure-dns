@@ -32,6 +32,6 @@ func (client *HTTPSDNSClient) String() string {
 }
 
 // Resolve DNS
-func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.Msg {
-	return request
+func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
+	return request, nil
 }
