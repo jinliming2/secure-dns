@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/jinliming2/encrypt-dns/client/ecs"
@@ -24,7 +25,12 @@ type TraditionalDNSClient struct {
 func NewTraditionalDNSClient(host []string, port uint16, timeout uint, settings config.DNSSettings) *TraditionalDNSClient {
 	addresses := make([]string, len(host))
 	for index, h := range host {
-		addresses[index] = fmt.Sprintf("%s:%d", h, port)
+		ip := net.ParseIP(h)
+		if ip != nil && ip.To4() == nil {
+			addresses[index] = fmt.Sprintf("[%s]:%d", h, port)
+		} else {
+			addresses[index] = fmt.Sprintf("%s:%d", h, port)
+		}
 	}
 	return &TraditionalDNSClient{
 		host:      host,
@@ -57,7 +63,6 @@ func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.
 		c = client.udpClient
 	}
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
-	// return request
 	// TODO: use random address
 	res, _, err := c.Exchange(request, client.addresses[0])
 	if err != nil {

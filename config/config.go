@@ -25,18 +25,20 @@ type typeGeneralConfig struct {
 }
 
 type typeUpstreamHTTPS struct {
-	Host   []string `toml:"host"`
-	Port   uint16   `toml:"port"` // default: 443
-	Path   string   `toml:"path"` // default: /dns-query
-	Google bool     `toml:"google"`
-	Cookie bool     `toml:"cookie"`
+	Host     []string `toml:"host"`
+	Port     uint16   `toml:"port"` // default: 443
+	Hostname string   `toml:"hostname"`
+	Path     string   `toml:"path"` // default: /dns-query
+	Google   bool     `toml:"google"`
+	Cookie   bool     `toml:"cookie"`
 	typeCustomSpecified
 	DNSSettings
 }
 
 type typeUpstreamTLS struct {
-	Host []string `toml:"host"`
-	Port uint16   `toml:"port"` // default: 853
+	Host     []string `toml:"host"`
+	Port     uint16   `toml:"port"` // default: 853
+	Hostname string   `toml:"hostname"`
 	typeCustomSpecified
 	DNSSettings
 }

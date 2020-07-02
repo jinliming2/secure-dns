@@ -9,6 +9,16 @@ import (
 // SetECS set EDNS Client Subnet for specified DNS request Message
 func SetECS(r *dns.Msg, noECS bool, ecs []net.IP) {
 	opt := r.IsEdns0()
+
+	if opt == nil {
+		if noECS || len(ecs) == 0 {
+			return
+		}
+
+		r.SetEdns0(dns.DefaultMsgSize, false)
+		opt = r.IsEdns0()
+	}
+
 	var eDNS0Subnet *dns.EDNS0_SUBNET
 
 	for index, option := range opt.Option {

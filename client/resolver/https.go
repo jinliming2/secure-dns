@@ -17,7 +17,7 @@ type HTTPSDNSClient struct {
 }
 
 // NewHTTPSDNSClient returns a new HTTPS DNS client
-func NewHTTPSDNSClient(host []string, port uint16, path string, google, cookie bool, timeout uint, settings config.DNSSettings) *HTTPSDNSClient {
+func NewHTTPSDNSClient(host []string, port uint16, hostname string, path string, google, cookie bool, timeout uint, settings config.DNSSettings, bootstrap DNSClient) *HTTPSDNSClient {
 	return &HTTPSDNSClient{
 		host:        host,
 		port:        port,
@@ -33,5 +33,5 @@ func (client *HTTPSDNSClient) String() string {
 
 // Resolve DNS
 func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) *dns.Msg {
-	return nil
+	return request
 }

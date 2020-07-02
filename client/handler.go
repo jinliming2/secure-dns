@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 
+	"github.com/jinliming2/encrypt-dns/client/resolver"
 	"github.com/miekg/dns"
 )
 
@@ -59,7 +60,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 
 	client.logger.Infow("request", "name", qName, "class", qClass, "type", qType)
 
-	var c *dnsClient
+	var c *resolver.DNSClient
 
 	for _, custom := range client.custom {
 		if custom.matcher(qName) {
