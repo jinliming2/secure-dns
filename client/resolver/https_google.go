@@ -3,7 +3,7 @@ package resolver
 import (
 	"fmt"
 
-	"github.com/jinliming2/encrypt-dns/config"
+	"github.com/jinliming2/secure-dns/config"
 	"github.com/miekg/dns"
 )
 

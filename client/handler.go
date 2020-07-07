@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 
-	"github.com/jinliming2/encrypt-dns/client/resolver"
+	"github.com/jinliming2/secure-dns/client/resolver"
 	"github.com/miekg/dns"
 )
 

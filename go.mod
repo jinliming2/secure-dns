@@ -1,4 +1,4 @@
-module github.com/jinliming2/encrypt-dns
+module github.com/jinliming2/secure-dns
 
 go 1.14
 

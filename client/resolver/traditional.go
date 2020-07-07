@@ -5,8 +5,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/jinliming2/encrypt-dns/client/ecs"
-	"github.com/jinliming2/encrypt-dns/config"
+	"github.com/jinliming2/secure-dns/client/ecs"
+	"github.com/jinliming2/secure-dns/config"
 	"github.com/miekg/dns"
 )
 

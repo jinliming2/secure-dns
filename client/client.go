@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/jinliming2/encrypt-dns/client/resolver"
-	"github.com/jinliming2/encrypt-dns/config"
+	"github.com/jinliming2/secure-dns/client/resolver"
+	"github.com/jinliming2/secure-dns/config"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )

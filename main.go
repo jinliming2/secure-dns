@@ -9,12 +9,12 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/jinliming2/encrypt-dns/client"
-	"github.com/jinliming2/encrypt-dns/config"
+	"github.com/jinliming2/secure-dns/client"
+	"github.com/jinliming2/secure-dns/config"
 )
 
 // PROGRAM is the name of this software
-const PROGRAM = "encrypt-dns"
+const PROGRAM = "secure-dns"
 
 // VERSION should be replaced at compile
 const VERSION = "UNKNOWN"
