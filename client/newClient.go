@@ -14,6 +14,20 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 
 	logger.Info("creating clients...")
 
+	for domain, b := range conf.Hosts {
+		c := resolver.NewHostsDNSClient(b)
+		if strings.HasPrefix(domain, "*.") {
+			domain = strings.TrimLeft(domain, "*.")
+			logger.Debugf("new HOSTS resolver: %s (for wildcard domain)", domain)
+			cr := newCustomResolver(c, []string{}, []string{domain})
+			client.custom = append(client.custom, cr)
+		} else {
+			logger.Debugf("new HOSTS resolver: %s", domain)
+			cr := newCustomResolver(c, []string{domain}, []string{})
+			client.custom = append(client.custom, cr)
+		}
+	}
+
 	for _, traditional := range conf.Traditional {
 		dnsConfig := config.DNSSettings{
 			CustomECS: append(traditional.CustomECS, conf.Config.CustomECS...),
@@ -86,20 +100,6 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 		} else {
 			logger.Debugf("new HTTPS resolver: %s", c.String())
 			client.upstream = append(client.upstream, c)
-		}
-	}
-
-	for domain, b := range conf.Hosts {
-		c := resolver.NewHostsDNSClient(b)
-		if strings.HasPrefix(domain, "*.") {
-			domain = strings.TrimLeft(domain, "*.")
-			logger.Debugf("new HOSTS resolver: %s (for wildcard domain)", domain)
-			cr := newCustomResolver(c, []string{}, []string{domain})
-			client.custom = append(client.custom, cr)
-		} else {
-			logger.Debugf("new HOSTS resolver: %s", domain)
-			cr := newCustomResolver(c, []string{domain}, []string{})
-			client.custom = append(client.custom, cr)
 		}
 	}
 
