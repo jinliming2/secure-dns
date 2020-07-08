@@ -66,18 +66,7 @@ func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	// TODO: use random address
 	res, _, err := c.Exchange(request, client.addresses[0])
 	if err != nil {
-		reply := &dns.Msg{
-			MsgHdr: dns.MsgHdr{
-				Id:       request.Id,
-				Response: true,
-				Opcode:   request.Opcode,
-				Rcode:    dns.RcodeServerFailure,
-			},
-			Compress: true,
-			Question: make([]dns.Question, len(request.Question)),
-		}
-		copy(reply.Question, request.Question)
-		return reply, fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
+		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
 	}
 	return res, nil
 }

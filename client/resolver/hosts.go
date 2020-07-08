@@ -22,17 +22,7 @@ func (client *HostsDNSClient) String() string {
 
 // Resolve DNS
 func (client *HostsDNSClient) Resolve(request *dns.Msg, useTCP bool) (reply *dns.Msg, _ error) {
-	reply = &dns.Msg{
-		MsgHdr: dns.MsgHdr{
-			Id:       request.Id,
-			Response: true,
-			Opcode:   request.Opcode,
-			Rcode:    dns.RcodeSuccess,
-		},
-		Compress: true,
-		Question: make([]dns.Question, len(request.Question)),
-	}
-	copy(reply.Question, request.Question)
+	reply = getEmptyResponse(request)
 
 	question := request.Question[0]
 

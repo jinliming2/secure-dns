@@ -23,13 +23,24 @@ func SetECS(r *dns.Msg, noECS bool, ecs []net.IP) {
 
 	for index, option := range opt.Option {
 		if option.Option() == dns.EDNS0SUBNET {
+
+			eDNS0Subnet = option.(*dns.EDNS0_SUBNET)
+
+			if eDNS0Subnet.Address.IsUnspecified() && eDNS0Subnet.SourceNetmask == 0 {
+				// +subnet=0
+				// got an EDNS CLIENT-SUBNET option with an empty address and a source prefix-length of zero,
+				// which signals a resolver that the client's address information must not be used when resolving this query.
+				// so we should just return
+				return
+			}
+
 			if noECS {
+				// specified no_ecs in configuration, so we omit the subnet option
 				opt.Option[index] = opt.Option[len(opt.Option)-1]
 				opt.Option = opt.Option[:len(opt.Option)-1]
 				return
 			}
 
-			eDNS0Subnet = option.(*dns.EDNS0_SUBNET)
 			break
 		}
 	}

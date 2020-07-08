@@ -11,20 +11,12 @@ import (
 
 	"github.com/jinliming2/secure-dns/client"
 	"github.com/jinliming2/secure-dns/config"
+	"github.com/jinliming2/secure-dns/versions"
 )
-
-// PROGRAM is the name of this software
-const PROGRAM = "secure-dns"
-
-// VERSION should be replaced at compile
-const VERSION = "UNKNOWN"
-
-// BUILDHASH should be replaced at compile
-const BUILDHASH = ""
 
 func main() {
 	var (
-		configFile = flag.String("config", "/etc/"+PROGRAM+"/config.toml", "Config file")
+		configFile = flag.String("config", "/etc/"+versions.PROGRAM+"/config.toml", "Config file")
 		version    = flag.Bool("version", false, "Show version")
 		logLevel   = flag.String("logLevel", "info", "Set log level (error, warn, info, verbose)")
 		verbose    = flag.Bool("verbose", false, "Set log level to verbose")
@@ -33,8 +25,8 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("%s %s\n", PROGRAM, VERSION)
-		fmt.Printf("Build with Go %s\n", runtime.Version())
+		fmt.Printf("%s/%s %s %s/%s\n", versions.PROGRAM, versions.VERSION, versions.BUILDHASH, runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("Build with Go %s (%s)\n", runtime.Version(), runtime.Compiler)
 		return
 	}
 

@@ -68,10 +68,15 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			NoECS:     conf.Config.NoECS || https.NoECS,
 		}
 		var c resolver.DNSClient
+		var err error
 		if https.Google {
-			c = resolver.NewHTTPSGoogleDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+			c, err = resolver.NewHTTPSGoogleDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
 		} else {
-			c = resolver.NewHTTPSDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+			c, err = resolver.NewHTTPSDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+		}
+		if err != nil {
+			logger.Error(err)
+			continue
 		}
 
 		if len(https.Domain)+len(https.Suffix) > 0 {
