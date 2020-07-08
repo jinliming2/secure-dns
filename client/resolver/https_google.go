@@ -67,7 +67,7 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	if request.CheckingDisabled {
 		query.Set("cd", "1")
 	}
-	query.Set("ct", "application/dns-message")
+	query.Set("ct", mimeDNSMsg)
 	if opt := request.IsEdns0(); opt != nil {
 		if opt.Do() {
 			query.Set("do", "1")
@@ -90,7 +90,7 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	if err != nil {
 		return getEmptyErrorResponse(request), err
 	}
-	req.Header.Set("accept", "application/dns-message")
+	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
 	req.Host = address.hostname
 

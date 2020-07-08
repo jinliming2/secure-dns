@@ -6,7 +6,11 @@ import (
 	"github.com/miekg/dns"
 )
 
-var dnsMsgRegex = regexp.MustCompile("\\bapplication/dns-message\\b")
+var (
+	regexDNSMsg = regexp.MustCompile("\\bapplication/dns-message\\b")
+
+	mimeDNSMsg = "application/dns-message"
+)
 
 // DNSClient is a DNS client
 type DNSClient interface {

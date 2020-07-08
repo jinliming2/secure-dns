@@ -86,9 +86,9 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 			return getEmptyErrorResponse(request), err
 		}
 		req.ContentLength = int64(len(msg))
-		req.Header.Set("content-type", "application/dns-message")
+		req.Header.Set("content-type", mimeDNSMsg)
 	}
-	req.Header.Set("accept", "application/dns-message")
+	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
 	req.Host = address.hostname
 
@@ -115,7 +115,7 @@ func httpsGetDNSMessage(request *dns.Msg, req *http.Request, client *http.Client
 	if res.StatusCode >= 300 || res.StatusCode < 200 {
 		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s (%s): %s", address, path, hostname, res.Status)
 	}
-	if !dnsMsgRegex.MatchString(res.Header.Get("content-type")) {
+	if !regexDNSMsg.MatchString(res.Header.Get("content-type")) {
 		return getEmptyErrorResponse(request), fmt.Errorf("HTTP unsupported MIME type: %s", res.Header.Get("content-type"))
 	}
 
