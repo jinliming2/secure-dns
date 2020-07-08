@@ -1,6 +1,6 @@
 package versions
 
-const (
+var (
 	// PROGRAM is the name of this software
 	PROGRAM = "secure-dns"
 	// VERSION should be replaced at compile
