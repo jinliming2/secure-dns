@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
+	"strconv"
 	"time"
 
+	"github.com/jinliming2/secure-dns/client/ecs"
 	"github.com/jinliming2/secure-dns/config"
+	"github.com/jinliming2/secure-dns/versions"
 	"github.com/miekg/dns"
 )
 
@@ -28,7 +32,7 @@ func NewHTTPSGoogleDNSClient(host []string, port uint16, hostname string, path s
 		return nil, err
 	}
 
-	var jar *cookiejar.Jar
+	var jar http.CookieJar
 	if cookie {
 		jar, _ = cookiejar.New(nil)
 	}
@@ -53,5 +57,50 @@ func (client *HTTPSGoogleDNSClient) String() string {
 
 // Resolve DNS
 func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
-	return request, nil
+	ecs.SetECS(request, client.NoECS, client.CustomECS)
+	// TODO: use random hostname
+	address := client.hostnames[0]
+
+	query := url.Values{}
+	query.Set("name", request.Question[0].Name)
+	query.Set("type", strconv.FormatUint(uint64(request.Question[0].Qtype), 10))
+	if request.CheckingDisabled {
+		query.Set("cd", "1")
+	}
+	query.Set("ct", "application/dns-message")
+	if opt := request.IsEdns0(); opt != nil {
+		if opt.Do() {
+			query.Set("do", "1")
+		}
+		for _, option := range opt.Option {
+			if option.Option() == dns.EDNS0SUBNET {
+				eDNS0Subnet := option.(*dns.EDNS0_SUBNET)
+				subnet := fmt.Sprintf("%s/%d", eDNS0Subnet.Address.String(), eDNS0Subnet.SourceNetmask)
+				query.Set("edns_client_subnet", subnet)
+			}
+		}
+	}
+	// TODO: random padding
+	// query.Set("random_padding", "")
+
+	// TODO: use random address
+	url := fmt.Sprintf("https://%s%s?%s", address.address[0], client.path, query.Encode())
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return getEmptyErrorResponse(request), err
+	}
+	req.Header.Set("accept", "application/dns-message")
+	req.Close = false
+	req.Host = address.hostname
+
+	if client.NoUserAgent {
+		req.Header.Set("user-agent", "")
+	} else if client.UserAgent != "" {
+		req.Header.Set("user-agent", client.UserAgent)
+	} else {
+		req.Header.Set("user-agent", versions.USERAGENT)
+	}
+
+	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path)
 }

@@ -1,6 +1,12 @@
 package resolver
 
-import "github.com/miekg/dns"
+import (
+	"regexp"
+
+	"github.com/miekg/dns"
+)
+
+var dnsMsgRegex = regexp.MustCompile("\\bapplication/dns-message\\b")
 
 // DNSClient is a DNS client
 type DNSClient interface {

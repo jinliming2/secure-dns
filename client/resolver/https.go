@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
-	"regexp"
 	"time"
 
 	"github.com/jinliming2/secure-dns/client/ecs"
@@ -15,8 +14,6 @@ import (
 	"github.com/jinliming2/secure-dns/versions"
 	"github.com/miekg/dns"
 )
-
-var dnsMsgRegex = regexp.MustCompile("\\bapplication/dns-message\\b")
 
 // HTTPSDNSClient resolves DNS with DNS-over-HTTPS
 type HTTPSDNSClient struct {
@@ -103,7 +100,11 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	res, err := client.client.Do(req)
+	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path)
+}
+
+func httpsGetDNSMessage(request *dns.Msg, req *http.Request, client *http.Client, address, hostname, path string) (*dns.Msg, error) {
+	res, err := client.Do(req)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
@@ -112,7 +113,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 	}
 
 	if res.StatusCode >= 300 || res.StatusCode < 200 {
-		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s (%s): %s", address.address[0], client.path, address.hostname, res.Status)
+		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s (%s): %s", address, path, hostname, res.Status)
 	}
 	if !dnsMsgRegex.MatchString(res.Header.Get("content-type")) {
 		return getEmptyErrorResponse(request), fmt.Errorf("HTTP unsupported MIME type: %s", res.Header.Get("content-type"))
