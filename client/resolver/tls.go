@@ -21,7 +21,14 @@ type TLSDNSClient struct {
 }
 
 // NewTLSDNSClient returns a new TLS DNS client
-func NewTLSDNSClient(host []string, port uint16, hostname string, timeout uint, settings config.DNSSettings, bootstrap DNSClient) (*TLSDNSClient, error) {
+func NewTLSDNSClient(
+	host []string,
+	port uint16,
+	hostname string,
+	timeout uint,
+	settings config.DNSSettings,
+	bootstrap DNSClient,
+) (*TLSDNSClient, error) {
 	hostnames, err := resolveTLS(host, port, hostname, bootstrap, "TLS Client")
 	if err != nil {
 		return nil, err

@@ -12,6 +12,7 @@ import (
 	"github.com/jinliming2/secure-dns/config"
 	"github.com/jinliming2/secure-dns/versions"
 	"github.com/miekg/dns"
+	"go.uber.org/zap"
 )
 
 // HTTPSGoogleDNSClient resolves DNS with DNS-over-HTTPS Google API
@@ -22,11 +23,21 @@ type HTTPSGoogleDNSClient struct {
 	client    *http.Client
 	path      string
 	timeout   uint
+	logger    *zap.SugaredLogger
 	config.DNSSettings
 }
 
 // NewHTTPSGoogleDNSClient returns a new HTTPS DNS client using Google API
-func NewHTTPSGoogleDNSClient(host []string, port uint16, hostname string, path string, cookie bool, timeout uint, settings config.DNSSettings, bootstrap DNSClient) (*HTTPSGoogleDNSClient, error) {
+func NewHTTPSGoogleDNSClient(
+	host []string,
+	port uint16,
+	hostname, path string,
+	cookie bool,
+	timeout uint,
+	settings config.DNSSettings,
+	bootstrap DNSClient,
+	logger *zap.SugaredLogger,
+) (*HTTPSGoogleDNSClient, error) {
 	hostnames, err := resolveTLS(host, port, hostname, bootstrap, "HTTPS Client")
 	if err != nil {
 		return nil, err
@@ -47,6 +58,7 @@ func NewHTTPSGoogleDNSClient(host []string, port uint16, hostname string, path s
 		},
 		path:        path,
 		timeout:     timeout,
+		logger:      logger,
 		DNSSettings: settings,
 	}, nil
 }
@@ -87,6 +99,7 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	url := fmt.Sprintf("https://%s%s?%s", address.address[0], client.path, query.Encode())
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
+	client.logger.Debugf("[%d] GET %s", request.Id, url)
 	if err != nil {
 		return getEmptyErrorResponse(request), err
 	}
@@ -102,5 +115,5 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path)
+	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path, client.logger)
 }

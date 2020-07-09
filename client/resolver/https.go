@@ -13,6 +13,7 @@ import (
 	"github.com/jinliming2/secure-dns/config"
 	"github.com/jinliming2/secure-dns/versions"
 	"github.com/miekg/dns"
+	"go.uber.org/zap"
 )
 
 // HTTPSDNSClient resolves DNS with DNS-over-HTTPS
@@ -23,11 +24,21 @@ type HTTPSDNSClient struct {
 	client    *http.Client
 	path      string
 	timeout   uint
+	logger    *zap.SugaredLogger
 	config.DNSSettings
 }
 
 // NewHTTPSDNSClient returns a new HTTPS DNS client
-func NewHTTPSDNSClient(host []string, port uint16, hostname string, path string, cookie bool, timeout uint, settings config.DNSSettings, bootstrap DNSClient) (*HTTPSDNSClient, error) {
+func NewHTTPSDNSClient(
+	host []string,
+	port uint16,
+	hostname, path string,
+	cookie bool,
+	timeout uint,
+	settings config.DNSSettings,
+	bootstrap DNSClient,
+	logger *zap.SugaredLogger,
+) (*HTTPSDNSClient, error) {
 	hostnames, err := resolveTLS(host, port, hostname, bootstrap, "HTTPS Client")
 	if err != nil {
 		return nil, err
@@ -48,6 +59,7 @@ func NewHTTPSDNSClient(host []string, port uint16, hostname string, path string,
 		},
 		path:        path,
 		timeout:     timeout,
+		logger:      logger,
 		DNSSettings: settings,
 	}, nil
 }
@@ -77,6 +89,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 	var req *http.Request
 	if len(url) < 2048 {
 		req, err = http.NewRequest(http.MethodGet, url, nil)
+		client.logger.Debugf("[%d] GET %s", request.Id, url)
 		if err != nil {
 			return getEmptyErrorResponse(request), err
 		}
@@ -87,6 +100,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 		}
 		req.ContentLength = int64(len(msg))
 		req.Header.Set("content-type", mimeDNSMsg)
+		client.logger.Debugf("[%d] POST %s with %d bytes body", request.Id, req.URL, req.ContentLength)
 	}
 	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
@@ -100,10 +114,16 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path)
+	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path, client.logger)
 }
 
-func httpsGetDNSMessage(request *dns.Msg, req *http.Request, client *http.Client, address, hostname, path string) (*dns.Msg, error) {
+func httpsGetDNSMessage(
+	request *dns.Msg,
+	req *http.Request,
+	client *http.Client,
+	address, hostname, path string,
+	logger *zap.SugaredLogger,
+) (*dns.Msg, error) {
 	res, err := client.Do(req)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
@@ -115,9 +135,12 @@ func httpsGetDNSMessage(request *dns.Msg, req *http.Request, client *http.Client
 	if res.StatusCode >= 300 || res.StatusCode < 200 {
 		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s (%s): %s", address, path, hostname, res.Status)
 	}
-	if !regexDNSMsg.MatchString(res.Header.Get("content-type")) {
-		return getEmptyErrorResponse(request), fmt.Errorf("HTTP unsupported MIME type: %s", res.Header.Get("content-type"))
+	contentType := res.Header.Get("content-type")
+	if !regexDNSMsg.MatchString(contentType) {
+		return getEmptyErrorResponse(request), fmt.Errorf("HTTP unsupported MIME type: %s", contentType)
 	}
+
+	logger.Debugf("[%d] %s: %s", request.Id, res.Status, contentType)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {

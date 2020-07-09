@@ -84,9 +84,29 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 		var c resolver.DNSClient
 		var err error
 		if https.Google {
-			c, err = resolver.NewHTTPSGoogleDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+			c, err = resolver.NewHTTPSGoogleDNSClient(
+				https.Host,
+				https.Port,
+				https.Hostname,
+				https.Path,
+				https.Cookie,
+				conf.Config.Timeout,
+				dnsConfig,
+				client.bootstrap,
+				logger,
+			)
 		} else {
-			c, err = resolver.NewHTTPSDNSClient(https.Host, https.Port, https.Hostname, https.Path, https.Cookie, conf.Config.Timeout, dnsConfig, client.bootstrap)
+			c, err = resolver.NewHTTPSDNSClient(
+				https.Host,
+				https.Port,
+				https.Hostname,
+				https.Path,
+				https.Cookie,
+				conf.Config.Timeout,
+				dnsConfig,
+				client.bootstrap,
+				logger,
+			)
 		}
 		if err != nil {
 			logger.Error(err)

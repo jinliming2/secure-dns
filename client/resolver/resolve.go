@@ -9,7 +9,13 @@ import (
 	"github.com/miekg/dns"
 )
 
-func resolveTLS(host []string, port uint16, hostname string, bootstrap DNSClient, errName string) (hostnames []*hostnameAddress, err error) {
+func resolveTLS(
+	host []string,
+	port uint16,
+	hostname string,
+	bootstrap DNSClient,
+	errName string,
+) (hostnames []*hostnameAddress, err error) {
 	var defaultAddress []string
 	for _, h := range host {
 		tlsURL, _ := url.Parse("tls://" + h)
