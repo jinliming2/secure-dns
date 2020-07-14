@@ -71,7 +71,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 	}
 
 	if c == nil {
-		if len(client.upstream) == 0 {
+		if client.upstream.Empty() {
 			client.logger.Errorf("no upstream to use for querying %s", qName)
 			reply := &dns.Msg{
 				MsgHdr: dns.MsgHdr{
@@ -88,8 +88,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 			return
 		}
 
-		// TODO: select randomly
-		c = &client.upstream[0]
+		c = client.upstream.Get().Client
 		client.logger.Debugf("[%d] using %s for %s", r.Id, (*c).String(), qName)
 	}
 

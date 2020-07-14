@@ -21,8 +21,9 @@ type typeCustomSpecified struct {
 }
 
 type typeGeneralConfig struct {
-	Listen  []string `toml:"listen"`
-	Timeout uint     `toml:"timeout"` // seconds
+	Listen     []string  `toml:"listen"`
+	Timeout    uint      `toml:"timeout"`     // seconds
+	RoundRobin Selectors `toml:"round_robin"` // default: clock
 	DNSSettings
 }
 
@@ -33,6 +34,7 @@ type typeUpstreamHTTPS struct {
 	Path     string   `toml:"path"` // default: /dns-query
 	Google   bool     `toml:"google"`
 	Cookie   bool     `toml:"cookie"`
+	Weight   int32    `toml:"weight"` // default: 1
 	typeCustomSpecified
 	DNSSettings
 }
@@ -41,6 +43,7 @@ type typeUpstreamTLS struct {
 	Host     []string `toml:"host"`
 	Port     uint16   `toml:"port"` // default: 853
 	Hostname string   `toml:"hostname"`
+	Weight   int32    `toml:"weight"` // default: 1
 	typeCustomSpecified
 	DNSSettings
 }
@@ -49,6 +52,7 @@ type typeTraditional struct {
 	Host      []string `toml:"host"`
 	Port      uint16   `toml:"port"` // default: 53
 	Bootstrap bool     `toml:"bootstrap"`
+	Weight    int32    `toml:"weight"` // default: 1
 	typeCustomSpecified
 	DNSSettings
 }
@@ -73,9 +77,10 @@ func LoadConfig(configPath string) (config *Config, err error) {
 	if len(config.Config.Listen) == 0 {
 		err = errors.New("no listen address")
 		return
-	} else if len(config.HTTPS)+len(config.TLS) == 0 {
-		err = errors.New("no available upstream")
-		return
+	}
+
+	if config.Config.RoundRobin == "" {
+		config.Config.RoundRobin = SelectorClock
 	}
 
 	for index := range config.HTTPS {
@@ -86,6 +91,9 @@ func LoadConfig(configPath string) (config *Config, err error) {
 		if https.Path == "" {
 			https.Path = "/dns-query"
 		}
+		if https.Weight < 1 {
+			https.Weight = 1
+		}
 	}
 
 	for index := range config.TLS {
@@ -93,12 +101,18 @@ func LoadConfig(configPath string) (config *Config, err error) {
 		if tls.Port == 0 {
 			tls.Port = 853
 		}
+		if tls.Weight < 1 {
+			tls.Weight = 1
+		}
 	}
 
 	for index := range config.Traditional {
 		traditional := &config.Traditional[index]
 		if traditional.Port == 0 {
 			traditional.Port = 53
+		}
+		if traditional.Weight < 1 {
+			traditional.Weight = 1
 		}
 	}
 

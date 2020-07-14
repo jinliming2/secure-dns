@@ -1,16 +1,32 @@
 package client
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/jinliming2/secure-dns/client/resolver"
 	"github.com/jinliming2/secure-dns/config"
+	"github.com/jinliming2/secure-dns/selector"
 	"go.uber.org/zap"
 )
 
 // NewClient returns a client with dnsClients
-func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) {
+func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client, err error) {
 	client = &Client{logger: logger, timeout: conf.Config.Timeout}
+
+	switch conf.Config.RoundRobin {
+	case config.SelectorClock:
+		client.upstream = &selector.Clock{}
+	case config.SelectorRandom:
+		client.upstream = &selector.Random{}
+	case config.SelectorSWRR:
+		client.upstream = &selector.SWrr{}
+	case config.SelectorWRandom:
+		client.upstream = &selector.WRandom{}
+	default:
+		err = fmt.Errorf("No such round robin: %s", conf.Config.RoundRobin)
+		return
+	}
 
 	logger.Info("creating clients...")
 
@@ -51,7 +67,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			client.custom = append(client.custom, cr)
 		} else {
 			logger.Debugf("new traditional resolver: %s", c.String())
-			client.upstream = append(client.upstream, c)
+			client.upstream.Add(traditional.Weight, c)
 		}
 	}
 
@@ -72,7 +88,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			client.custom = append(client.custom, cr)
 		} else {
 			logger.Debugf("new TLS resolver: %s", c.String())
-			client.upstream = append(client.upstream, c)
+			client.upstream.Add(tls.Weight, c)
 		}
 	}
 
@@ -119,9 +135,12 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client) 
 			client.custom = append(client.custom, cr)
 		} else {
 			logger.Debugf("new HTTPS resolver: %s", c.String())
-			client.upstream = append(client.upstream, c)
+			client.upstream.Add(https.Weight, c)
 		}
 	}
+
+	client.upstream.Start()
+	logger.Infof("using round robin: %s", client.upstream.Name())
 
 	return
 }

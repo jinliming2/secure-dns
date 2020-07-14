@@ -47,7 +47,12 @@ func main() {
 		logger.Debugf("Configuration file: %s", json)
 	}
 
-	dnsClient := client.NewClient(logger, config)
+	dnsClient, err := client.NewClient(logger, config)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
+
 	go func() {
 		err := dnsClient.ListenAndServe(config.Config.Listen)
 		if err != nil {

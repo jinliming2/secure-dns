@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jinliming2/secure-dns/client/resolver"
+	"github.com/jinliming2/secure-dns/selector"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )
@@ -14,7 +15,7 @@ type Client struct {
 	timeout uint
 
 	bootstrap resolver.DNSClient
-	upstream  []resolver.DNSClient
+	upstream  selector.Selector
 
 	custom []*customResolver
 
