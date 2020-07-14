@@ -25,8 +25,7 @@ type TraditionalDNSClient struct {
 func NewTraditionalDNSClient(host []string, port uint16, timeout uint, settings config.DNSSettings) *TraditionalDNSClient {
 	addresses := make([]string, len(host))
 	for index, h := range host {
-		ip := net.ParseIP(h)
-		if ip != nil && ip.To4() == nil {
+		if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
 			addresses[index] = fmt.Sprintf("[%s]:%d", h, port)
 		} else {
 			addresses[index] = fmt.Sprintf("%s:%d", h, port)

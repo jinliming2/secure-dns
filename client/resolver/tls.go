@@ -3,6 +3,7 @@ package resolver
 import (
 	"crypto/tls"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/jinliming2/secure-dns/client/ecs"
@@ -14,8 +15,8 @@ import (
 type TLSDNSClient struct {
 	host      []string
 	port      uint16
-	hostnames []*hostnameAddress
-	clients   map[string]*dns.Client
+	addresses []string
+	client    *dns.Client
 	timeout   uint
 	config.DNSSettings
 }
@@ -27,32 +28,33 @@ func NewTLSDNSClient(
 	hostname string,
 	timeout uint,
 	settings config.DNSSettings,
-	bootstrap DNSClient,
+	bootstrap *net.Resolver,
 ) (*TLSDNSClient, error) {
-	hostnames, err := resolveTLS(host, port, hostname, bootstrap, "TLS Client")
-	if err != nil {
-		return nil, err
-	}
 
-	clients := map[string]*dns.Client{}
-	for _, hip := range hostnames {
-		if c, ok := clients[hip.hostname]; !ok || c == nil {
-			clients[hip.hostname] = &dns.Client{
-				Net: "tcp-tls",
-				TLSConfig: &tls.Config{
-					ServerName:         hip.hostname,
-					ClientSessionCache: tls.NewLRUClientSessionCache(-1),
-				},
-				Timeout: time.Duration(timeout),
-			}
+	addresses := make([]string, len(host))
+	for index, h := range host {
+		if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
+			addresses[index] = fmt.Sprintf("[%s]:%d", h, port)
+		} else {
+			addresses[index] = fmt.Sprintf("%s:%d", h, port)
 		}
 	}
 
 	return &TLSDNSClient{
-		host:        host,
-		port:        port,
-		hostnames:   hostnames,
-		clients:     clients,
+		host:      host,
+		port:      port,
+		addresses: addresses,
+		client: &dns.Client{
+			Net: "tcp-tls",
+			TLSConfig: &tls.Config{
+				ServerName:         hostname,
+				ClientSessionCache: tls.NewLRUClientSessionCache(-1),
+			},
+			Dialer: &net.Dialer{
+				Resolver: bootstrap,
+			},
+			Timeout: time.Duration(timeout),
+		},
 		timeout:     timeout,
 		DNSSettings: settings,
 	}, nil
@@ -65,10 +67,8 @@ func (client *TLSDNSClient) String() string {
 // Resolve DNS
 func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
-	// TODO: use random hostname
-	address := client.hostnames[0]
 	// TODO: use random address
-	res, _, err := client.clients[address.hostname].Exchange(request, address.address[0])
+	res, _, err := client.client.Exchange(request, client.addresses[0])
 	if err != nil {
 		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
 	}

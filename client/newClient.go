@@ -1,8 +1,12 @@
 package client
 
 import (
+	"context"
 	"fmt"
+	"math/rand"
+	"net"
 	"strings"
+	"time"
 
 	"github.com/jinliming2/secure-dns/client/resolver"
 	"github.com/jinliming2/secure-dns/config"
@@ -44,24 +48,46 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client, 
 		}
 	}
 
+	var randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+traditionalLoop:
 	for _, traditional := range conf.Traditional {
+		if traditional.Bootstrap {
+			logger.Debugf("new traditional resolver: %s (for bootstrap)", fmt.Sprintf("dns://%s:%d", traditional.Host, traditional.Port))
+			if client.bootstrap != nil {
+				logger.Warnf("only one bootstrap resolver allowed, ignoring %s...", fmt.Sprintf("dns://%s:%d", traditional.Host, traditional.Port))
+				continue
+			}
+			if len(traditional.Domain)+len(traditional.Suffix) > 0 {
+				logger.Warn("domain and suffix doesn't support for bootstrap resolver")
+			}
+			count := len(traditional.Host)
+			addresses := make([]string, count)
+			for index, host := range traditional.Host {
+				if addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, traditional.Port)); err == nil {
+					addresses[index] = addr.String()
+				} else if addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("[%s]:%d", host, traditional.Port)); err == nil {
+					addresses[index] = addr.String()
+				} else {
+					logger.Warnf("parse bootstrap address failed: %s:%d, [%s]:%d", host, traditional.Port, host, traditional.Port)
+					continue traditionalLoop
+				}
+			}
+			client.bootstrap = &net.Resolver{
+				Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+					return (&net.Dialer{}).DialContext(ctx, network, addresses[randomSource.Intn(count)])
+				},
+			}
+			continue
+		}
+
 		dnsConfig := config.DNSSettings{
 			CustomECS: append(traditional.CustomECS, conf.Config.CustomECS...),
 			NoECS:     conf.Config.NoECS || traditional.NoECS,
 		}
 		c := resolver.NewTraditionalDNSClient(traditional.Host, traditional.Port, conf.Config.Timeout, dnsConfig)
 
-		if traditional.Bootstrap {
-			logger.Debugf("new traditional resolver: %s (for bootstrap)", c.String())
-			if client.bootstrap != nil {
-				logger.Warnf("only one bootstrap resolver allowed, ignoring %s...", c.String())
-				continue
-			}
-			if len(traditional.Domain)+len(traditional.Suffix) > 0 {
-				logger.Warn("domain and suffix doesn't support for bootstrap resolver")
-			}
-			client.bootstrap = c
-		} else if len(traditional.Domain)+len(traditional.Suffix) > 0 {
+		if len(traditional.Domain)+len(traditional.Suffix) > 0 {
 			logger.Debugf("new traditional resolver: %s (for specified domain or suffix use)", c.String())
 			cr := newCustomResolver(c, traditional.Domain, traditional.Suffix)
 			client.custom = append(client.custom, cr)

@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -19,7 +20,7 @@ import (
 type HTTPSGoogleDNSClient struct {
 	host      []string
 	port      uint16
-	hostnames []*hostnameAddress
+	addresses []string
 	client    *http.Client
 	path      string
 	timeout   uint
@@ -35,13 +36,24 @@ func NewHTTPSGoogleDNSClient(
 	cookie bool,
 	timeout uint,
 	settings config.DNSSettings,
-	bootstrap DNSClient,
+	bootstrap *net.Resolver,
 	logger *zap.SugaredLogger,
 ) (*HTTPSGoogleDNSClient, error) {
-	hostnames, err := resolveTLS(host, port, hostname, bootstrap, "HTTPS Client")
-	if err != nil {
-		return nil, err
+
+	addresses := make([]string, len(host))
+	for index, h := range host {
+		if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
+			addresses[index] = fmt.Sprintf("[%s]:%d", h, port)
+		} else {
+			addresses[index] = fmt.Sprintf("%s:%d", h, port)
+		}
 	}
+
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	dialer := &net.Dialer{
+		Resolver: bootstrap,
+	}
+	transport.DialContext = dialer.DialContext
 
 	var jar http.CookieJar
 	if cookie {
@@ -51,10 +63,11 @@ func NewHTTPSGoogleDNSClient(
 	return &HTTPSGoogleDNSClient{
 		host:      host,
 		port:      port,
-		hostnames: hostnames,
+		addresses: addresses,
 		client: &http.Client{
-			Jar:     jar,
-			Timeout: time.Duration(timeout),
+			Transport: transport,
+			Jar:       jar,
+			Timeout:   time.Duration(timeout),
 		},
 		path:        path,
 		timeout:     timeout,
@@ -70,8 +83,6 @@ func (client *HTTPSGoogleDNSClient) String() string {
 // Resolve DNS
 func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
-	// TODO: use random hostname
-	address := client.hostnames[0]
 
 	query := url.Values{}
 	query.Set("name", request.Question[0].Name)
@@ -96,7 +107,7 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	// query.Set("random_padding", "")
 
 	// TODO: use random address
-	url := fmt.Sprintf("https://%s%s?%s", address.address[0], client.path, query.Encode())
+	url := fmt.Sprintf("https://%s%s?%s", client.addresses[0], client.path, query.Encode())
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	client.logger.Debugf("[%d] GET %s", request.Id, url)
@@ -105,7 +116,6 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	}
 	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
-	req.Host = address.hostname
 
 	if client.NoUserAgent {
 		req.Header.Set("user-agent", "")
@@ -115,5 +125,6 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path, client.logger)
+	// TODO: use random address
+	return httpsGetDNSMessage(request, req, client.client, client.addresses[0], client.path, client.logger)
 }

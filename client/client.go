@@ -2,8 +2,8 @@ package client
 
 import (
 	"context"
+	"net"
 
-	"github.com/jinliming2/secure-dns/client/resolver"
 	"github.com/jinliming2/secure-dns/selector"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
@@ -14,7 +14,7 @@ type Client struct {
 	logger  *zap.SugaredLogger
 	timeout uint
 
-	bootstrap resolver.DNSClient
+	bootstrap *net.Resolver
 	upstream  selector.Selector
 
 	custom []*customResolver

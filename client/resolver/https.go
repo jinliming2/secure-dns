@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"time"
@@ -20,7 +21,7 @@ import (
 type HTTPSDNSClient struct {
 	host      []string
 	port      uint16
-	hostnames []*hostnameAddress
+	addresses []string
 	client    *http.Client
 	path      string
 	timeout   uint
@@ -36,13 +37,24 @@ func NewHTTPSDNSClient(
 	cookie bool,
 	timeout uint,
 	settings config.DNSSettings,
-	bootstrap DNSClient,
+	bootstrap *net.Resolver,
 	logger *zap.SugaredLogger,
 ) (*HTTPSDNSClient, error) {
-	hostnames, err := resolveTLS(host, port, hostname, bootstrap, "HTTPS Client")
-	if err != nil {
-		return nil, err
+
+	addresses := make([]string, len(host))
+	for index, h := range host {
+		if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
+			addresses[index] = fmt.Sprintf("[%s]:%d", h, port)
+		} else {
+			addresses[index] = fmt.Sprintf("%s:%d", h, port)
+		}
 	}
+
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	dialer := &net.Dialer{
+		Resolver: bootstrap,
+	}
+	transport.DialContext = dialer.DialContext
 
 	var jar http.CookieJar
 	if cookie {
@@ -52,10 +64,11 @@ func NewHTTPSDNSClient(
 	return &HTTPSDNSClient{
 		host:      host,
 		port:      port,
-		hostnames: hostnames,
+		addresses: addresses,
 		client: &http.Client{
-			Jar:     jar,
-			Timeout: time.Duration(timeout),
+			Transport: transport,
+			Jar:       jar,
+			Timeout:   time.Duration(timeout),
 		},
 		path:        path,
 		timeout:     timeout,
@@ -71,8 +84,6 @@ func (client *HTTPSDNSClient) String() string {
 // Resolve DNS
 func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
-	// TODO: use random hostname
-	address := client.hostnames[0]
 
 	msg, err := request.Pack()
 	if err != nil {
@@ -84,7 +95,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 	data := base64.RawURLEncoding.EncodeToString(msg)
 
 	// TODO: use random address
-	url := fmt.Sprintf("https://%s%s?dns=%s", address.address[0], client.path, data)
+	url := fmt.Sprintf("https://%s%s?dns=%s", client.addresses[0], client.path, data)
 
 	var req *http.Request
 	if len(url) < 2048 {
@@ -94,7 +105,8 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 			return getEmptyErrorResponse(request), err
 		}
 	} else {
-		req, err = http.NewRequest(http.MethodPost, fmt.Sprintf("https://%s%s", address.address[0], client.path), bytes.NewReader(msg))
+		// TODO: use random address
+		req, err = http.NewRequest(http.MethodPost, fmt.Sprintf("https://%s%s", client.addresses[0], client.path), bytes.NewReader(msg))
 		if err != nil {
 			return getEmptyErrorResponse(request), err
 		}
@@ -104,7 +116,6 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 	}
 	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
-	req.Host = address.hostname
 
 	if client.NoUserAgent {
 		req.Header.Set("user-agent", "")
@@ -114,14 +125,15 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	return httpsGetDNSMessage(request, req, client.client, address.address[0], address.hostname, client.path, client.logger)
+	// TODO: use random address
+	return httpsGetDNSMessage(request, req, client.client, client.addresses[0], client.path, client.logger)
 }
 
 func httpsGetDNSMessage(
 	request *dns.Msg,
 	req *http.Request,
 	client *http.Client,
-	address, hostname, path string,
+	address, path string,
 	logger *zap.SugaredLogger,
 ) (*dns.Msg, error) {
 	res, err := client.Do(req)
@@ -133,7 +145,7 @@ func httpsGetDNSMessage(
 	}
 
 	if res.StatusCode >= 300 || res.StatusCode < 200 {
-		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s (%s): %s", address, path, hostname, res.Status)
+		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s: %s", address, path, res.Status)
 	}
 	contentType := res.Header.Get("content-type")
 	if !regexDNSMsg.MatchString(contentType) {
