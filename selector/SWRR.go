@@ -37,11 +37,14 @@ func (sWrr *SWrr) Add(weight int32, client resolver.DNSClient) {
 
 // Empty Selector?
 func (sWrr *SWrr) Empty() bool {
-	return len(sWrr.clients) == 0
+	return sWrr.length == 0
 }
 
 // Start set index
 func (sWrr *SWrr) Start() {
+	if sWrr.Empty() {
+		return
+	}
 	count := randomSource.Int31n(sWrr.length)
 	for i := int32(0); i < count; i++ {
 		sWrr.Get()
@@ -50,6 +53,10 @@ func (sWrr *SWrr) Start() {
 
 // Get an item
 func (sWrr *SWrr) Get() *Item {
+	if sWrr.Empty() {
+		return nil
+	}
+
 	var (
 		total int32
 		best  *Item

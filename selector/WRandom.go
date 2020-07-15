@@ -39,7 +39,7 @@ func (wRandom *WRandom) Add(weight int32, client resolver.DNSClient) {
 
 // Empty Selector?
 func (wRandom *WRandom) Empty() bool {
-	return len(wRandom.clients) == 0
+	return wRandom.length == 0
 }
 
 // Start set index
@@ -49,6 +49,9 @@ func (wRandom *WRandom) Start() {
 
 // Get an item
 func (wRandom *WRandom) Get() *Item {
+	if wRandom.Empty() {
+		return nil
+	}
 	index := randomSource.Int31n(wRandom.length)
 	for _, info := range wRandom.clients {
 		if info.min <= index && index < info.max {

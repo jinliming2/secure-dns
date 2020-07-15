@@ -29,7 +29,7 @@ func (random *Random) Add(weight int32, client resolver.DNSClient) {
 
 // Empty Selector?
 func (random *Random) Empty() bool {
-	return len(random.clients) == 0
+	return random.length == 0
 }
 
 // Start set index
@@ -39,6 +39,9 @@ func (random *Random) Start() {
 
 // Get an item
 func (random *Random) Get() *Item {
+	if random.Empty() {
+		return nil
+	}
 	return random.clients[randomSource.Intn(random.length)]
 }
 

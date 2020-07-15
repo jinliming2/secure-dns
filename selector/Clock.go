@@ -37,17 +37,20 @@ func (clock *Clock) Add(weight int32, client resolver.DNSClient) {
 
 // Empty Selector?
 func (clock *Clock) Empty() bool {
-	return len(clock.clients) == 0
+	return clock.length == 0
 }
 
 // Start set index
 func (clock *Clock) Start() {
+	if clock.Empty() {
+		return
+	}
 	clock.index = randomSource.Int31n(clock.length)
 }
 
 // Get an item
 func (clock *Clock) Get() *Item {
-	if clock.length == 0 {
+	if clock.Empty() {
 		return nil
 	}
 
