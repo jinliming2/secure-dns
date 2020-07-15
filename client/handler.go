@@ -72,7 +72,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 
 	if c == nil {
 		if client.upstream.Empty() {
-			client.logger.Errorf("no upstream to use for querying %s", qName)
+			client.logger.Warnf("no upstream to use for querying %s", qName)
 			reply := &dns.Msg{
 				MsgHdr: dns.MsgHdr{
 					Id:       r.Id,
