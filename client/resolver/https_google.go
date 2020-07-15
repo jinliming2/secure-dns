@@ -20,7 +20,7 @@ import (
 type HTTPSGoogleDNSClient struct {
 	host      []string
 	port      uint16
-	addresses []string
+	addresses []addressHostname
 	client    *http.Client
 	path      string
 	timeout   uint
@@ -40,12 +40,16 @@ func NewHTTPSGoogleDNSClient(
 	logger *zap.SugaredLogger,
 ) (*HTTPSGoogleDNSClient, error) {
 
-	addresses := make([]string, len(host))
+	addresses := make([]addressHostname, len(host))
 	for index, h := range host {
-		if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
-			addresses[index] = fmt.Sprintf("[%s]:%d", h, port)
+		if ip := net.ParseIP(h); ip != nil {
+			if ip.To4() == nil {
+				addresses[index] = addressHostname{address: fmt.Sprintf("[%s]:%d", h, port), hostname: hostname}
+			} else {
+				addresses[index] = addressHostname{address: fmt.Sprintf("%s:%d", h, port), hostname: hostname}
+			}
 		} else {
-			addresses[index] = fmt.Sprintf("%s:%d", h, port)
+			addresses[index] = addressHostname{address: fmt.Sprintf("%s:%d", h, port)}
 		}
 	}
 
@@ -107,7 +111,7 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	// query.Set("random_padding", "")
 
 	// TODO: use random address
-	url := fmt.Sprintf("https://%s%s?%s", client.addresses[0], client.path, query.Encode())
+	url := fmt.Sprintf("https://%s%s?%s", client.addresses[0].address, client.path, query.Encode())
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	client.logger.Debugf("[%d] GET %s", request.Id, url)
@@ -116,6 +120,9 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	}
 	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
+	if client.addresses[0].hostname != "" {
+		req.Host = client.addresses[0].hostname
+	}
 
 	if client.NoUserAgent {
 		req.Header.Set("user-agent", "")
