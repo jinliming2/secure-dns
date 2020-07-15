@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 
 	"github.com/jinliming2/secure-dns/client"
@@ -25,8 +23,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("%s/%s %s %s/%s\n", versions.PROGRAM, versions.VERSION, versions.BUILDHASH, runtime.GOOS, runtime.GOARCH)
-		fmt.Printf("Build with Go %s (%s)\n", runtime.Version(), runtime.Compiler)
+		versions.PrintVersion()
 		return
 	}
 

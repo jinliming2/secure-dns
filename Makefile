@@ -1,7 +1,8 @@
 PACKAGE=github.com/jinliming2/secure-dns
 VERSION=`git describe --tags --abbrev=0`
+HASH=`git rev-parse --short HEAD`
 DATE=`date +%Y%m%d%H%M%S`
-LDFLAGS="-X '${PACKAGE}/versions.VERSION=${VERSION} (${DATE})' -s -w"
+LDFLAGS="-X '${PACKAGE}/versions.VERSION=${VERSION} (${DATE})' -X '${PACKAGE}/versions.BUILDHASH=${HASH}' -s -w"
 
 .PHONY: all build clean
 
