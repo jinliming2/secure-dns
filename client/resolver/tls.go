@@ -53,7 +53,8 @@ func NewTLSDNSClient(
 			Dialer: &net.Dialer{
 				Resolver: bootstrap,
 			},
-			Timeout: time.Duration(timeout),
+			Timeout:        time.Duration(timeout),
+			SingleInflight: true,
 		},
 		timeout:     timeout,
 		DNSSettings: settings,
