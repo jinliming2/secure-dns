@@ -62,8 +62,7 @@ func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 		c = client.udpClient
 	}
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
-	// TODO: use random address
-	res, _, err := c.Exchange(request, client.addresses[0])
+	res, _, err := c.Exchange(request, client.addresses[randomSource.Intn(len(client.addresses))])
 	if err != nil {
 		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
 	}

@@ -1,7 +1,9 @@
 package resolver
 
 import (
+	"math/rand"
 	"regexp"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -10,6 +12,8 @@ var (
 	regexDNSMsg = regexp.MustCompile("\\bapplication/dns-message\\b")
 
 	mimeDNSMsg = "application/dns-message"
+
+	randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 // DNSClient is a DNS client
@@ -18,9 +22,9 @@ type DNSClient interface {
 	Resolve(*dns.Msg, bool) (*dns.Msg, error)
 }
 
-type hostnameAddress struct {
+type addressHostname struct {
+	address  string
 	hostname string
-	address  []string
 }
 
 func getEmptyResponse(request *dns.Msg) *dns.Msg {

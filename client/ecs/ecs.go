@@ -1,10 +1,14 @@
 package ecs
 
 import (
+	"math/rand"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
 )
+
+var randomSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // SetECS set EDNS Client Subnet for specified DNS request Message
 func SetECS(r *dns.Msg, noECS bool, ecs []net.IP) {
@@ -56,8 +60,7 @@ func SetECS(r *dns.Msg, noECS bool, ecs []net.IP) {
 		opt.Option = append(opt.Option, eDNS0Subnet)
 	}
 
-	// TODO: select ecs randomally
-	ip := ecs[0]
+	ip := ecs[randomSource.Intn(len(ecs))]
 	ip4 := ip.To4()
 
 	if ip4 != nil {

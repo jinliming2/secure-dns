@@ -98,8 +98,9 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 
 	data := base64.RawURLEncoding.EncodeToString(msg)
 
-	// TODO: use random address
-	url := fmt.Sprintf("https://%s%s?dns=%s", client.addresses[0], client.path, data)
+	address := client.addresses[randomSource.Intn(len(client.addresses))]
+
+	url := fmt.Sprintf("https://%s%s?dns=%s", address, client.path, data)
 
 	var req *http.Request
 	if len(url) < 2048 {
@@ -109,8 +110,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 			return getEmptyErrorResponse(request), err
 		}
 	} else {
-		// TODO: use random address
-		req, err = http.NewRequest(http.MethodPost, fmt.Sprintf("https://%s%s", client.addresses[0].address, client.path), bytes.NewReader(msg))
+		req, err = http.NewRequest(http.MethodPost, fmt.Sprintf("https://%s%s", address.address, client.path), bytes.NewReader(msg))
 		if err != nil {
 			return getEmptyErrorResponse(request), err
 		}
@@ -120,8 +120,8 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 	}
 	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
-	if client.addresses[0].hostname != "" {
-		req.Host = client.addresses[0].hostname
+	if address.hostname != "" {
+		req.Host = address.hostname
 	}
 
 	if client.NoUserAgent {
@@ -132,8 +132,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	// TODO: use random address
-	return httpsGetDNSMessage(request, req, client.client, client.addresses[0], client.path, client.logger)
+	return httpsGetDNSMessage(request, req, client.client, address, client.path, client.logger)
 }
 
 func httpsGetDNSMessage(

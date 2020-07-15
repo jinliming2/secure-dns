@@ -110,8 +110,9 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	// TODO: random padding
 	// query.Set("random_padding", "")
 
-	// TODO: use random address
-	url := fmt.Sprintf("https://%s%s?%s", client.addresses[0].address, client.path, query.Encode())
+	address := client.addresses[randomSource.Intn(len(client.addresses))]
+
+	url := fmt.Sprintf("https://%s%s?%s", address.address, client.path, query.Encode())
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	client.logger.Debugf("[%d] GET %s", request.Id, url)
@@ -120,8 +121,8 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 	}
 	req.Header.Set("accept", mimeDNSMsg)
 	req.Close = false
-	if client.addresses[0].hostname != "" {
-		req.Host = client.addresses[0].hostname
+	if address.hostname != "" {
+		req.Host = address.hostname
 	}
 
 	if client.NoUserAgent {
@@ -132,6 +133,5 @@ func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns
 		req.Header.Set("user-agent", versions.USERAGENT)
 	}
 
-	// TODO: use random address
-	return httpsGetDNSMessage(request, req, client.client, client.addresses[0], client.path, client.logger)
+	return httpsGetDNSMessage(request, req, client.client, address, client.path, client.logger)
 }
