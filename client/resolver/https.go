@@ -100,7 +100,7 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 
 	address := client.addresses[randomSource.Intn(len(client.addresses))]
 
-	url := fmt.Sprintf("https://%s%s?dns=%s", address, client.path, data)
+	url := fmt.Sprintf("https://%s%s?dns=%s", address.address, client.path, data)
 
 	var req *http.Request
 	if len(url) < 2048 {
