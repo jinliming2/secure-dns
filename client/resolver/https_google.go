@@ -14,17 +14,19 @@ import (
 	"github.com/jinliming2/secure-dns/versions"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 )
 
 // HTTPSGoogleDNSClient resolves DNS with DNS-over-HTTPS Google API
 type HTTPSGoogleDNSClient struct {
-	host      []string
-	port      uint16
-	addresses []addressHostname
-	client    *http.Client
-	path      string
-	timeout   uint
-	logger    *zap.SugaredLogger
+	host           []string
+	port           uint16
+	addresses      []addressHostname
+	client         *http.Client
+	path           string
+	timeout        uint
+	singleInflight *singleflight.Group
+	logger         *zap.SugaredLogger
 	config.DNSSettings
 }
 
@@ -73,10 +75,11 @@ func NewHTTPSGoogleDNSClient(
 			Jar:       jar,
 			Timeout:   time.Duration(timeout),
 		},
-		path:        path,
-		timeout:     timeout,
-		logger:      logger,
-		DNSSettings: settings,
+		path:           path,
+		timeout:        timeout,
+		singleInflight: &singleflight.Group{},
+		logger:         logger,
+		DNSSettings:    settings,
 	}, nil
 }
 
@@ -86,6 +89,10 @@ func (client *HTTPSGoogleDNSClient) String() string {
 
 // Resolve DNS
 func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
+	return httpsSingleInflightRequest(request, client.singleInflight, client.resolve)
+}
+
+func (client *HTTPSGoogleDNSClient) resolve(request *dns.Msg) (*dns.Msg, error) {
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
 
 	query := url.Values{}

@@ -15,17 +15,19 @@ import (
 	"github.com/jinliming2/secure-dns/versions"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 )
 
 // HTTPSDNSClient resolves DNS with DNS-over-HTTPS
 type HTTPSDNSClient struct {
-	host      []string
-	port      uint16
-	addresses []addressHostname
-	client    *http.Client
-	path      string
-	timeout   uint
-	logger    *zap.SugaredLogger
+	host           []string
+	port           uint16
+	addresses      []addressHostname
+	client         *http.Client
+	path           string
+	timeout        uint
+	singleInflight *singleflight.Group
+	logger         *zap.SugaredLogger
 	config.DNSSettings
 }
 
@@ -74,10 +76,11 @@ func NewHTTPSDNSClient(
 			Jar:       jar,
 			Timeout:   time.Duration(timeout),
 		},
-		path:        path,
-		timeout:     timeout,
-		logger:      logger,
-		DNSSettings: settings,
+		path:           path,
+		timeout:        timeout,
+		singleInflight: &singleflight.Group{},
+		logger:         logger,
+		DNSSettings:    settings,
 	}, nil
 }
 
@@ -87,6 +90,10 @@ func (client *HTTPSDNSClient) String() string {
 
 // Resolve DNS
 func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
+	return httpsSingleInflightRequest(request, client.singleInflight, client.resolve)
+}
+
+func (client *HTTPSDNSClient) resolve(request *dns.Msg) (*dns.Msg, error) {
 	ecs.SetECS(request, client.NoECS, client.CustomECS)
 
 	msg, err := request.Pack()
@@ -133,6 +140,35 @@ func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, 
 	}
 
 	return httpsGetDNSMessage(request, req, client.client, address, client.path, client.logger)
+}
+
+func httpsSingleInflightRequest(
+	request *dns.Msg,
+	singleInflight *singleflight.Group,
+	resolve func(request *dns.Msg) (*dns.Msg, error),
+) (*dns.Msg, error) {
+	if singleInflight == nil {
+		return resolve(request)
+	}
+
+	question := request.Question[0]
+	key := fmt.Sprintf("%s:%d:%d", question.Name, question.Qtype, question.Qclass)
+
+	result := <-singleInflight.DoChan(key, func() (interface{}, error) {
+		return resolve(request)
+	})
+
+	if result.Err != nil || result.Val == nil {
+		return getEmptyErrorResponse(request), result.Err
+	}
+
+	reply := result.Val.(*dns.Msg)
+	if result.Shared {
+		reply = reply.Copy()
+	}
+	reply.Id = request.Id
+
+	return reply, nil
 }
 
 func httpsGetDNSMessage(
