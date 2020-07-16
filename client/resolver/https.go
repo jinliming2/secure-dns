@@ -67,6 +67,11 @@ func NewHTTPSDNSClient(
 		jar, _ = cookiejar.New(nil)
 	}
 
+	var sf *singleflight.Group
+	if !settings.NoSingleInflight {
+		sf = &singleflight.Group{}
+	}
+
 	return &HTTPSDNSClient{
 		host:      host,
 		port:      port,
@@ -78,7 +83,7 @@ func NewHTTPSDNSClient(
 		},
 		path:           path,
 		timeout:        timeout,
-		singleInflight: &singleflight.Group{},
+		singleInflight: sf,
 		logger:         logger,
 		DNSSettings:    settings,
 	}, nil

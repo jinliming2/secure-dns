@@ -9,10 +9,11 @@ import (
 
 // DNSSettings described general settings of DNS resolver
 type DNSSettings struct {
-	CustomECS   []net.IP `toml:"custom_ecs"`
-	NoECS       bool     `toml:"no_ecs"`
-	UserAgent   string   `toml:"user_agent"`
-	NoUserAgent bool     `toml:"no_user_agent"`
+	CustomECS        []net.IP `toml:"custom_ecs"`
+	NoECS            bool     `toml:"no_ecs"`
+	UserAgent        string   `toml:"user_agent"`
+	NoUserAgent      bool     `toml:"no_user_agent"`
+	NoSingleInflight bool     `toml:"no_single_inflight"`
 }
 
 type typeCustomSpecified struct {

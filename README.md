@@ -69,6 +69,7 @@ TXT = [ 'text' ]
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
 | user_agent | `string` | | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS |
 | no_user_agent | `boolean` | | `false` | do not send User-Agent header in DNS over HTTPS |
+| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
 
 Example:
 ```toml
@@ -92,6 +93,7 @@ no_user_agent = true
 | suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
+| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
 
 Example:
 ```toml
@@ -121,6 +123,7 @@ suffix = [
 | suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
+| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
 
 Example:
 ```toml
@@ -154,6 +157,7 @@ domain = [
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
 | user_agent | `string` | | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS |
 | no_user_agent | `boolean` | | `false` | do not send User-Agent header in DNS over HTTPS |
+| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
 
 Example:
 ```toml

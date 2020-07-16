@@ -66,6 +66,11 @@ func NewHTTPSGoogleDNSClient(
 		jar, _ = cookiejar.New(nil)
 	}
 
+	var sf *singleflight.Group
+	if !settings.NoSingleInflight {
+		sf = &singleflight.Group{}
+	}
+
 	return &HTTPSGoogleDNSClient{
 		host:      host,
 		port:      port,
@@ -77,7 +82,7 @@ func NewHTTPSGoogleDNSClient(
 		},
 		path:           path,
 		timeout:        timeout,
-		singleInflight: &singleflight.Group{},
+		singleInflight: sf,
 		logger:         logger,
 		DNSSettings:    settings,
 	}, nil

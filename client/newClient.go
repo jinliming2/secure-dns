@@ -82,8 +82,9 @@ traditionalLoop:
 		}
 
 		dnsConfig := config.DNSSettings{
-			CustomECS: append(traditional.CustomECS, conf.Config.CustomECS...),
-			NoECS:     conf.Config.NoECS || traditional.NoECS,
+			CustomECS:        append(traditional.CustomECS, conf.Config.CustomECS...),
+			NoECS:            conf.Config.NoECS || traditional.NoECS,
+			NoSingleInflight: conf.Config.NoSingleInflight || traditional.NoSingleInflight,
 		}
 		c := resolver.NewTraditionalDNSClient(traditional.Host, traditional.Port, conf.Config.Timeout, dnsConfig)
 
@@ -99,8 +100,9 @@ traditionalLoop:
 
 	for _, tls := range conf.TLS {
 		dnsConfig := config.DNSSettings{
-			CustomECS: append(tls.CustomECS, conf.Config.CustomECS...),
-			NoECS:     conf.Config.NoECS || tls.NoECS,
+			CustomECS:        append(tls.CustomECS, conf.Config.CustomECS...),
+			NoECS:            conf.Config.NoECS || tls.NoECS,
+			NoSingleInflight: conf.Config.NoSingleInflight || tls.NoSingleInflight,
 		}
 		c, err := resolver.NewTLSDNSClient(tls.Host, tls.Port, tls.Hostname, conf.Config.Timeout, dnsConfig, client.bootstrap)
 		if err != nil {
@@ -120,8 +122,15 @@ traditionalLoop:
 
 	for _, https := range conf.HTTPS {
 		dnsConfig := config.DNSSettings{
-			CustomECS: append(https.CustomECS, conf.Config.CustomECS...),
-			NoECS:     conf.Config.NoECS || https.NoECS,
+			CustomECS:        append(https.CustomECS, conf.Config.CustomECS...),
+			NoECS:            conf.Config.NoECS || https.NoECS,
+			NoUserAgent:      conf.Config.NoUserAgent || https.NoUserAgent,
+			NoSingleInflight: conf.Config.NoSingleInflight || https.NoSingleInflight,
+		}
+		if https.UserAgent != "" {
+			dnsConfig.UserAgent = https.UserAgent
+		} else if conf.Config.UserAgent != "" {
+			dnsConfig.UserAgent = conf.Config.UserAgent
 		}
 		var c resolver.DNSClient
 		var err error

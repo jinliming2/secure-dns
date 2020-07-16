@@ -54,7 +54,7 @@ func NewTLSDNSClient(
 				Resolver: bootstrap,
 			},
 			Timeout:        time.Duration(timeout),
-			SingleInflight: true,
+			SingleInflight: !settings.NoSingleInflight,
 		},
 		timeout:     timeout,
 		DNSSettings: settings,
