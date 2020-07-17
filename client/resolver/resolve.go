@@ -6,7 +6,8 @@ import (
 	"github.com/miekg/dns"
 )
 
-func fixHTTPSRecordTTL(rr dns.RR, delta time.Duration) {
+// FixRecordTTL of reply dns msg
+func FixRecordTTL(rr dns.RR, delta time.Duration) {
 	header := rr.Header()
 	if header.Rrtype == dns.TypeOPT {
 		return

@@ -28,22 +28,9 @@ type addressHostname struct {
 }
 
 func getEmptyResponse(request *dns.Msg) *dns.Msg {
-	msg := &dns.Msg{
-		MsgHdr: dns.MsgHdr{
-			Id:       request.Id,
-			Response: true,
-			Opcode:   request.Opcode,
-			Rcode:    dns.RcodeSuccess,
-		},
-		Compress: true,
-		Question: make([]dns.Question, len(request.Question)),
-	}
-	copy(msg.Question, request.Question)
-	return msg
+	return new(dns.Msg).SetReply(request)
 }
 
 func getEmptyErrorResponse(request *dns.Msg) *dns.Msg {
-	msg := getEmptyResponse(request)
-	msg.Rcode = dns.RcodeServerFailure
-	return msg
+	return new(dns.Msg).SetRcode(request, dns.RcodeServerFailure)
 }

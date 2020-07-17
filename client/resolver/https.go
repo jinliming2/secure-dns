@@ -227,13 +227,13 @@ func httpsGetDNSMessage(
 			delta := now.Sub(modifiedTime)
 			if delta > 0 {
 				for _, rr := range reply.Answer {
-					fixHTTPSRecordTTL(rr, delta)
+					FixRecordTTL(rr, delta)
 				}
 				for _, rr := range reply.Ns {
-					fixHTTPSRecordTTL(rr, delta)
+					FixRecordTTL(rr, delta)
 				}
 				for _, rr := range reply.Extra {
-					fixHTTPSRecordTTL(rr, delta)
+					FixRecordTTL(rr, delta)
 				}
 			}
 		}

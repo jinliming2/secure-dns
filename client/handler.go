@@ -26,17 +26,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 
 	if len(r.Question) != 1 {
 		client.logger.Warn("request packet contains more than 1 question is not allowed")
-		reply := &dns.Msg{
-			MsgHdr: dns.MsgHdr{
-				Id:       r.Id,
-				Response: true,
-				Opcode:   r.Opcode,
-				Rcode:    dns.RcodeFormatError,
-			},
-			Compress: true,
-			Question: make([]dns.Question, len(r.Question)),
-		}
-		copy(reply.Question, r.Question)
+		reply := new(dns.Msg).SetReply(r).SetRcodeFormatError(r)
 		w.WriteMsg(reply)
 		return
 	}
@@ -73,17 +63,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 	if c == nil {
 		if client.upstream.Empty() {
 			client.logger.Warnf("no upstream to use for querying %s", qName)
-			reply := &dns.Msg{
-				MsgHdr: dns.MsgHdr{
-					Id:       r.Id,
-					Response: true,
-					Opcode:   r.Opcode,
-					Rcode:    dns.RcodeServerFailure,
-				},
-				Compress: true,
-				Question: make([]dns.Question, len(r.Question)),
-			}
-			copy(reply.Question, r.Question)
+			reply := new(dns.Msg).SetRcode(r, dns.RcodeServerFailure)
 			w.WriteMsg(reply)
 			return
 		}
