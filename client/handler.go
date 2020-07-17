@@ -66,7 +66,7 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 					resolver.FixRecordTTL(rr, delta)
 				}
 			}
-			client.logger.Infof("[%d] using cache", r.Id)
+			client.logger.Debugf("[%d] using cache for %s", r.Id, qName)
 			w.WriteMsg(response)
 			return
 		}
