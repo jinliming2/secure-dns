@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinliming2/secure-dns/client/cache"
 	"github.com/jinliming2/secure-dns/client/resolver"
 	"github.com/jinliming2/secure-dns/config"
 	"github.com/jinliming2/secure-dns/selector"
@@ -176,6 +177,10 @@ traditionalLoop:
 
 	client.upstream.Start()
 	logger.Infof("using round robin: %s", client.upstream.Name())
+
+	if !conf.Config.NoCache {
+		client.cacher = cache.NewCache()
+	}
 
 	return
 }

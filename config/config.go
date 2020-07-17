@@ -25,6 +25,7 @@ type typeGeneralConfig struct {
 	Listen     []string  `toml:"listen"`
 	Timeout    uint      `toml:"timeout"`     // seconds
 	RoundRobin Selectors `toml:"round_robin"` // default: clock
+	NoCache    bool      `toml:"no_cache"`
 	DNSSettings
 }
 

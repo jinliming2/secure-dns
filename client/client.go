@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/jinliming2/secure-dns/client/cache"
 	"github.com/jinliming2/secure-dns/selector"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
@@ -20,6 +21,8 @@ type Client struct {
 	custom []*customResolver
 
 	servers []*dns.Server
+
+	cacher *cache.Cache
 }
 
 func startDNSServer(server *dns.Server, logger *zap.SugaredLogger, results chan error) {
@@ -32,7 +35,7 @@ func startDNSServer(server *dns.Server, logger *zap.SugaredLogger, results chan 
 
 // ListenAndServe listen on addresses and serve DNS service
 func (client *Client) ListenAndServe(addr []string) error {
-	client.servers = make([]*dns.Server, 2*len(addr))
+	client.servers = make([]*dns.Server, 0, 2*len(addr))
 
 	results := make(chan error)
 
@@ -81,6 +84,9 @@ func (client *Client) ShutdownContext(ctx context.Context) (errors []error) {
 				errors = append(errors, err)
 			}
 		}
+	}
+	if client.cacher != nil {
+		client.cacher.Destroy()
 	}
 	return
 }
