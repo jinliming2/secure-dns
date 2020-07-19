@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/jinliming2/secure-dns/client/cache"
 	"github.com/jinliming2/secure-dns/selector"
@@ -13,7 +14,7 @@ import (
 // Client handles DNS requests
 type Client struct {
 	logger  *zap.SugaredLogger
-	timeout uint
+	timeout time.Duration
 
 	bootstrap *net.Resolver
 	upstream  selector.Selector

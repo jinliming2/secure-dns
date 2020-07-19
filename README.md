@@ -63,7 +63,7 @@ TXT = [ 'text' ]
 | Key | Type | Required | Default | Description |
 |:---|:---:|:---:|:---:|:---|
 | listen | `string[]` | ✔️ | | host and port to listen |
-| timeout | `uint` | | `0` | timeout for each DNS request, default 0 to disable |
+| timeout | `uint` | | `0` | timeout in seconds for each DNS request, default 0 to disable |
 | round_robin | `string` | | `'clock'` | upstream select round robin, can only be `'clock'`, `'random'`, `'wrandom'` or `'swrr'` |
 | no_cache | `boolean` | | `false` | disable global DNS result cache |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |

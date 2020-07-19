@@ -17,7 +17,7 @@ type TLSDNSClient struct {
 	port      uint16
 	addresses []string
 	client    *dns.Client
-	timeout   uint
+	timeout   time.Duration
 	config.DNSSettings
 }
 
@@ -26,7 +26,7 @@ func NewTLSDNSClient(
 	host []string,
 	port uint16,
 	hostname string,
-	timeout uint,
+	timeout time.Duration,
 	settings config.DNSSettings,
 	bootstrap *net.Resolver,
 ) (*TLSDNSClient, error) {
@@ -53,7 +53,7 @@ func NewTLSDNSClient(
 			Dialer: &net.Dialer{
 				Resolver: bootstrap,
 			},
-			Timeout:        time.Duration(timeout),
+			Timeout:        timeout,
 			SingleInflight: !settings.NoSingleInflight,
 		},
 		timeout:     timeout,

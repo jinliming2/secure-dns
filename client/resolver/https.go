@@ -25,7 +25,7 @@ type HTTPSDNSClient struct {
 	addresses      []addressHostname
 	client         *http.Client
 	path           string
-	timeout        uint
+	timeout        time.Duration
 	singleInflight *singleflight.Group
 	logger         *zap.SugaredLogger
 	config.DNSSettings
@@ -37,7 +37,7 @@ func NewHTTPSDNSClient(
 	port uint16,
 	hostname, path string,
 	cookie bool,
-	timeout uint,
+	timeout time.Duration,
 	settings config.DNSSettings,
 	bootstrap *net.Resolver,
 	logger *zap.SugaredLogger,
@@ -79,7 +79,7 @@ func NewHTTPSDNSClient(
 		client: &http.Client{
 			Transport: transport,
 			Jar:       jar,
-			Timeout:   time.Duration(timeout),
+			Timeout:   timeout,
 		},
 		path:           path,
 		timeout:        timeout,

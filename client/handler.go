@@ -17,9 +17,6 @@ func (client *Client) udpHandlerFunc(w dns.ResponseWriter, r *dns.Msg) {
 }
 
 func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool) {
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Duration(client.timeout)*time.Second)
-	// defer cancel()
-
 	if r.Response {
 		client.logger.Warn("received a response packet")
 		return

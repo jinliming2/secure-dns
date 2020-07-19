@@ -17,12 +17,12 @@ type TraditionalDNSClient struct {
 	addresses []string
 	udpClient *dns.Client
 	tcpClient *dns.Client
-	timeout   uint
+	timeout   time.Duration
 	config.DNSSettings
 }
 
 // NewTraditionalDNSClient returns a new traditional DNS client
-func NewTraditionalDNSClient(host []string, port uint16, timeout uint, settings config.DNSSettings) *TraditionalDNSClient {
+func NewTraditionalDNSClient(host []string, port uint16, timeout time.Duration, settings config.DNSSettings) *TraditionalDNSClient {
 	addresses := make([]string, len(host))
 	for index, h := range host {
 		if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
@@ -38,12 +38,12 @@ func NewTraditionalDNSClient(host []string, port uint16, timeout uint, settings 
 		udpClient: &dns.Client{
 			Net:            "udp",
 			UDPSize:        dns.DefaultMsgSize,
-			Timeout:        time.Duration(timeout),
+			Timeout:        timeout,
 			SingleInflight: !settings.NoSingleInflight,
 		},
 		tcpClient: &dns.Client{
 			Net:            "tcp",
-			Timeout:        time.Duration(timeout),
+			Timeout:        timeout,
 			SingleInflight: !settings.NoSingleInflight,
 		},
 		timeout:     timeout,

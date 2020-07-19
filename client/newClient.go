@@ -17,7 +17,8 @@ import (
 
 // NewClient returns a client with dnsClients
 func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client, err error) {
-	client = &Client{logger: logger, timeout: conf.Config.Timeout}
+	timeout := time.Duration(conf.Config.Timeout) * time.Second
+	client = &Client{logger: logger, timeout: timeout}
 
 	switch conf.Config.RoundRobin {
 	case config.SelectorClock:
@@ -87,7 +88,7 @@ traditionalLoop:
 			NoECS:            conf.Config.NoECS || traditional.NoECS,
 			NoSingleInflight: conf.Config.NoSingleInflight || traditional.NoSingleInflight,
 		}
-		c := resolver.NewTraditionalDNSClient(traditional.Host, traditional.Port, conf.Config.Timeout, dnsConfig)
+		c := resolver.NewTraditionalDNSClient(traditional.Host, traditional.Port, timeout, dnsConfig)
 
 		if len(traditional.Domain)+len(traditional.Suffix) > 0 {
 			logger.Debugf("new traditional resolver: %s (for specified domain or suffix use)", c.String())
@@ -105,7 +106,7 @@ traditionalLoop:
 			NoECS:            conf.Config.NoECS || tls.NoECS,
 			NoSingleInflight: conf.Config.NoSingleInflight || tls.NoSingleInflight,
 		}
-		c, err := resolver.NewTLSDNSClient(tls.Host, tls.Port, tls.Hostname, conf.Config.Timeout, dnsConfig, client.bootstrap)
+		c, err := resolver.NewTLSDNSClient(tls.Host, tls.Port, tls.Hostname, timeout, dnsConfig, client.bootstrap)
 		if err != nil {
 			logger.Error(err)
 			continue
@@ -142,7 +143,7 @@ traditionalLoop:
 				https.Hostname,
 				https.Path,
 				https.Cookie,
-				conf.Config.Timeout,
+				timeout,
 				dnsConfig,
 				client.bootstrap,
 				logger,
@@ -154,7 +155,7 @@ traditionalLoop:
 				https.Hostname,
 				https.Path,
 				https.Cookie,
-				conf.Config.Timeout,
+				timeout,
 				dnsConfig,
 				client.bootstrap,
 				logger,
