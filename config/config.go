@@ -23,7 +23,7 @@ type typeCustomSpecified struct {
 
 type typeGeneralConfig struct {
 	Listen     []string  `toml:"listen"`
-	Timeout    uint      `toml:"timeout"`     // seconds
+	Timeout    *uint     `toml:"timeout"`     // seconds
 	RoundRobin Selectors `toml:"round_robin"` // default: clock
 	NoCache    bool      `toml:"no_cache"`
 	DNSSettings
@@ -79,6 +79,10 @@ func LoadConfig(configPath string) (config *Config, err error) {
 	if len(config.Config.Listen) == 0 {
 		err = errors.New("no listen address")
 		return
+	}
+	if config.Config.Timeout == nil {
+		config.Config.Timeout = new(uint)
+		*config.Config.Timeout = 5
 	}
 
 	if config.Config.RoundRobin == "" {
