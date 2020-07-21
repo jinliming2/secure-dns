@@ -117,6 +117,8 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 				minttl = ttl
 			}
 		}
-		client.cacher.SetDataTTL(question.Name, question.Qtype, question.Qclass, response, time.Duration(minttl)*time.Second)
+		if minttl > 0 {
+			client.cacher.SetDataTTL(question.Name, question.Qtype, question.Qclass, response, time.Duration(minttl)*time.Second)
+		}
 	}
 }
