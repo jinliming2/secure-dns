@@ -72,5 +72,7 @@ func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, er
 	if err != nil {
 		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
 	}
+	// https://github.com/miekg/dns/issues/1145
+	res.Id = request.Id
 	return res, nil
 }
