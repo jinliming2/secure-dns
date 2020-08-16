@@ -1,5 +1,9 @@
 # Secure DNS
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/jinliming2/secure-dns)](https://goreportcard.com/report/github.com/jinliming2/secure-dns)
+
+A DNS client which implemented DoT and DoH, with load balancing, DNS cache, custom ECS and HOSTs.
+
 ## Table of Content
 
 * [Table of Content](#table-of-content)
