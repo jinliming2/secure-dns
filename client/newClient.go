@@ -85,6 +85,7 @@ traditionalLoop:
 
 		dnsConfig := config.DNSSettings{
 			CustomECS:        append(traditional.CustomECS, conf.Config.CustomECS...),
+			FallbackNoECS:    conf.Config.FallbackNoECS || traditional.FallbackNoECS,
 			NoECS:            conf.Config.NoECS || traditional.NoECS,
 			NoSingleInflight: conf.Config.NoSingleInflight || traditional.NoSingleInflight,
 		}
@@ -103,6 +104,7 @@ traditionalLoop:
 	for _, tls := range conf.TLS {
 		dnsConfig := config.DNSSettings{
 			CustomECS:        append(tls.CustomECS, conf.Config.CustomECS...),
+			FallbackNoECS:    conf.Config.FallbackNoECS || tls.FallbackNoECS,
 			NoECS:            conf.Config.NoECS || tls.NoECS,
 			NoSingleInflight: conf.Config.NoSingleInflight || tls.NoSingleInflight,
 		}
@@ -125,6 +127,7 @@ traditionalLoop:
 	for _, https := range conf.HTTPS {
 		dnsConfig := config.DNSSettings{
 			CustomECS:        append(https.CustomECS, conf.Config.CustomECS...),
+			FallbackNoECS:    conf.Config.FallbackNoECS || https.FallbackNoECS,
 			NoECS:            conf.Config.NoECS || https.NoECS,
 			NoUserAgent:      conf.Config.NoUserAgent || https.NoUserAgent,
 			NoSingleInflight: conf.Config.NoSingleInflight || https.NoSingleInflight,

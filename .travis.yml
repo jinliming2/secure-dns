@@ -1,14 +1,13 @@
 language: go
 go:
-- 1.x
-- master
+  - master
+  - 1.x
 deploy:
   edge: true
   provider: releases
   overwrite: true
-  skip_cleanup: true
   file:
-  - build/secure-dns
+    - build/secure-dns
   on:
     tags: true
   token:

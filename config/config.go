@@ -10,6 +10,7 @@ import (
 // DNSSettings described general settings of DNS resolver
 type DNSSettings struct {
 	CustomECS        []net.IP `toml:"custom_ecs"`
+	FallbackNoECS    bool     `toml:"fallback_no_ecs"`
 	NoECS            bool     `toml:"no_ecs"`
 	UserAgent        string   `toml:"user_agent"`
 	NoUserAgent      bool     `toml:"no_user_agent"`

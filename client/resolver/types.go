@@ -19,7 +19,8 @@ var (
 // DNSClient is a DNS client
 type DNSClient interface {
 	String() string
-	Resolve(*dns.Msg, bool) (*dns.Msg, error)
+	FallbackNoECSEnabled() bool
+	Resolve(*dns.Msg, bool, bool) (*dns.Msg, error)
 }
 
 type addressHostname struct {

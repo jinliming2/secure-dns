@@ -72,6 +72,7 @@ TXT = [ 'text' ]
 | round_robin | `string` | | `'clock'` | upstream select round robin, can only be `'clock'`, `'random'`, `'wrandom'` or `'swrr'` |
 | no_cache | `boolean` | | `false` | disable global DNS result cache |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
+| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
 | user_agent | `string` | | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS |
 | no_user_agent | `boolean` | | `false` | do not send User-Agent header in DNS over HTTPS |
@@ -98,6 +99,7 @@ no_user_agent = true
 | domain | `string[]` | | | mark this DNS server only used to resolve specified domain names |
 | suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
+| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
 | no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
 
@@ -128,6 +130,7 @@ suffix = [
 | domain | `string[]` | | | mark this DNS server only used to resolve specified domain names |
 | suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
+| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
 | no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
 
@@ -160,6 +163,7 @@ domain = [
 | domain | `string[]` | | | mark this DNS server only used to resolve specified domain names |
 | suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
+| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
 | no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
 | user_agent | `string` | | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS |
 | no_user_agent | `boolean` | | `false` | do not send User-Agent header in DNS over HTTPS |

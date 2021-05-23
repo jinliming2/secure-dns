@@ -65,9 +65,13 @@ func (client *TLSDNSClient) String() string {
 	return fmt.Sprintf("tls://%s:%d", client.host, client.port)
 }
 
+func (client *TLSDNSClient) FallbackNoECSEnabled() bool {
+	return client.FallbackNoECS
+}
+
 // Resolve DNS
-func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
-	ecs.SetECS(request, client.NoECS, client.CustomECS)
+func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool, forceNoECS bool) (*dns.Msg, error) {
+	ecs.SetECS(request, forceNoECS || client.NoECS, client.CustomECS)
 	res, _, err := client.client.Exchange(request, client.addresses[randomSource.Intn(len(client.addresses))])
 	if err != nil {
 		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())

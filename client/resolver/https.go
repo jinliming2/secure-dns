@@ -93,13 +93,17 @@ func (client *HTTPSDNSClient) String() string {
 	return fmt.Sprintf("https://%s:%d%s", client.host, client.port, client.path)
 }
 
-// Resolve DNS
-func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
-	return httpsSingleInflightRequest(request, client.singleInflight, client.resolve)
+func (client *HTTPSDNSClient) FallbackNoECSEnabled() bool {
+	return client.FallbackNoECS
 }
 
-func (client *HTTPSDNSClient) resolve(request *dns.Msg) (*dns.Msg, error) {
-	ecs.SetECS(request, client.NoECS, client.CustomECS)
+// Resolve DNS
+func (client *HTTPSDNSClient) Resolve(request *dns.Msg, useTCP bool, forceNoECS bool) (*dns.Msg, error) {
+	return httpsSingleInflightRequest(request, forceNoECS, client.singleInflight, client.resolve)
+}
+
+func (client *HTTPSDNSClient) resolve(request *dns.Msg, forceNoECS bool) (*dns.Msg, error) {
+	ecs.SetECS(request, forceNoECS || client.NoECS, client.CustomECS)
 
 	msg, err := request.Pack()
 	if err != nil {
@@ -149,18 +153,19 @@ func (client *HTTPSDNSClient) resolve(request *dns.Msg) (*dns.Msg, error) {
 
 func httpsSingleInflightRequest(
 	request *dns.Msg,
+	forceNoECS bool,
 	singleInflight *singleflight.Group,
-	resolve func(request *dns.Msg) (*dns.Msg, error),
+	resolve func(request *dns.Msg, forceNoECS bool) (*dns.Msg, error),
 ) (*dns.Msg, error) {
 	if singleInflight == nil {
-		return resolve(request)
+		return resolve(request, forceNoECS)
 	}
 
 	question := request.Question[0]
 	key := fmt.Sprintf("%s:%d:%d", question.Name, question.Qtype, question.Qclass)
 
 	result := <-singleInflight.DoChan(key, func() (interface{}, error) {
-		return resolve(request)
+		return resolve(request, forceNoECS)
 	})
 
 	if result.Err != nil || result.Val == nil {

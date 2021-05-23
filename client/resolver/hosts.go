@@ -20,8 +20,12 @@ func (client *HostsDNSClient) String() string {
 	return "HOSTS resolver"
 }
 
+func (client *HostsDNSClient) FallbackNoECSEnabled() bool {
+	return false
+}
+
 // Resolve DNS
-func (client *HostsDNSClient) Resolve(request *dns.Msg, useTCP bool) (reply *dns.Msg, _ error) {
+func (client *HostsDNSClient) Resolve(request *dns.Msg, useTCP bool, forceNoECS bool) (reply *dns.Msg, _ error) {
 	reply = getEmptyResponse(request)
 
 	question := request.Question[0]

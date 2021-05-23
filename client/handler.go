@@ -91,9 +91,15 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 		client.logger.Debugf("[%d] using %s for %s", r.Id, (*c).String(), qName)
 	}
 
-	response, err := (*c).Resolve(r, useTCP)
+	response, err := (*c).Resolve(r, useTCP, false)
 	if err != nil {
 		client.logger.Warn(err.Error())
+	}
+	if len(response.Answer) == 0 && (*c).FallbackNoECSEnabled() {
+		response, err = (*c).Resolve(r, useTCP, true)
+		if err != nil {
+			client.logger.Warn(err.Error())
+		}
 	}
 	w.WriteMsg(response)
 

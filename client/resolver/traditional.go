@@ -55,15 +55,19 @@ func (client *TraditionalDNSClient) String() string {
 	return fmt.Sprintf("dns://%s:%d", client.host, client.port)
 }
 
+func (client *TraditionalDNSClient) FallbackNoECSEnabled() bool {
+	return client.FallbackNoECS
+}
+
 // Resolve DNS
-func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
+func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool, forceNoECS bool) (*dns.Msg, error) {
 	var c *dns.Client
 	if useTCP {
 		c = client.tcpClient
 	} else {
 		c = client.udpClient
 	}
-	ecs.SetECS(request, client.NoECS, client.CustomECS)
+	ecs.SetECS(request, forceNoECS || client.NoECS, client.CustomECS)
 	res, _, err := c.Exchange(request, client.addresses[randomSource.Intn(len(client.addresses))])
 	if err != nil {
 		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())

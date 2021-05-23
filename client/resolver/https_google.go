@@ -92,13 +92,17 @@ func (client *HTTPSGoogleDNSClient) String() string {
 	return fmt.Sprintf("https+google://%s:%d%s", client.host, client.port, client.path)
 }
 
-// Resolve DNS
-func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool) (*dns.Msg, error) {
-	return httpsSingleInflightRequest(request, client.singleInflight, client.resolve)
+func (client *HTTPSGoogleDNSClient) FallbackNoECSEnabled() bool {
+	return client.FallbackNoECS
 }
 
-func (client *HTTPSGoogleDNSClient) resolve(request *dns.Msg) (*dns.Msg, error) {
-	ecs.SetECS(request, client.NoECS, client.CustomECS)
+// Resolve DNS
+func (client *HTTPSGoogleDNSClient) Resolve(request *dns.Msg, useTCP bool, forceNoECS bool) (*dns.Msg, error) {
+	return httpsSingleInflightRequest(request, forceNoECS, client.singleInflight, client.resolve)
+}
+
+func (client *HTTPSGoogleDNSClient) resolve(request *dns.Msg, forceNoECS bool) (*dns.Msg, error) {
+	ecs.SetECS(request, forceNoECS || client.NoECS, client.CustomECS)
 
 	query := url.Values{}
 	query.Set("name", request.Question[0].Name)
