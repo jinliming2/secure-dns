@@ -1,6 +1,6 @@
 # Secure DNS
 
-[![Build Status](https://travis-ci.org/jinliming2/secure-dns.svg?branch=master)](https://travis-ci.org/jinliming2/secure-dns)
+[![Build Status](https://travis-ci.com/jinliming2/secure-dns.svg?branch=master)](https://travis-ci.com/jinliming2/secure-dns)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jinliming2/secure-dns)](https://goreportcard.com/report/github.com/jinliming2/secure-dns)
 
 A DNS client which implemented DoT and DoH, with load balancing, DNS cache, custom ECS and HOSTs.
