@@ -93,6 +93,10 @@ func (client *HTTPSDNSClient) String() string {
 	return fmt.Sprintf("https://%s:%d%s", client.host, client.port, client.path)
 }
 
+func (client *HTTPSDNSClient) ECSDisabled() bool {
+	return client.NoECS
+}
+
 func (client *HTTPSDNSClient) FallbackNoECSEnabled() bool {
 	return client.FallbackNoECS
 }
@@ -198,7 +202,7 @@ func httpsGetDNSMessage(
 	}
 
 	if res.StatusCode >= 300 || res.StatusCode < 200 {
-		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s: %s", address, path, res.Status)
+		return getEmptyErrorResponse(request), fmt.Errorf("HTTP error from %s%s: %d %s", address, path, res.StatusCode, res.Status)
 	}
 	contentType := res.Header.Get("content-type")
 	if !regexDNSMsg.MatchString(contentType) {

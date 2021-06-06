@@ -95,7 +95,8 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 	if err != nil {
 		client.logger.Warn(err.Error())
 	}
-	if len(response.Answer) == 0 && (*c).FallbackNoECSEnabled() {
+	if (len(response.Answer) == 0 || !answerHasType(response.Answer, question.Qtype)) && (!(*c).ECSDisabled()) && (*c).FallbackNoECSEnabled() {
+		client.logger.Debugf("[%d] retring resolve %s with ECS disabled", r.Id, qName)
 		response, err = (*c).Resolve(r, useTCP, true)
 		if err != nil {
 			client.logger.Warn(err.Error())
@@ -127,4 +128,13 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 			client.cacher.SetDataTTL(question.Name, question.Qtype, question.Qclass, response, time.Duration(minttl)*time.Second)
 		}
 	}
+}
+
+func answerHasType(answer []dns.RR, qType uint16) bool {
+	for _, a := range answer {
+		if a.Header().Rrtype == qType {
+			return true
+		}
+	}
+	return false
 }

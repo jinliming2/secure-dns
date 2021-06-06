@@ -92,6 +92,10 @@ func (client *HTTPSGoogleDNSClient) String() string {
 	return fmt.Sprintf("https+google://%s:%d%s", client.host, client.port, client.path)
 }
 
+func (client *HTTPSGoogleDNSClient) ECSDisabled() bool {
+	return client.NoECS
+}
+
 func (client *HTTPSGoogleDNSClient) FallbackNoECSEnabled() bool {
 	return client.FallbackNoECS
 }

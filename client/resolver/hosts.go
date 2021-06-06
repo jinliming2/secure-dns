@@ -20,6 +20,10 @@ func (client *HostsDNSClient) String() string {
 	return "HOSTS resolver"
 }
 
+func (client *HostsDNSClient) ECSDisabled() bool {
+	return true
+}
+
 func (client *HostsDNSClient) FallbackNoECSEnabled() bool {
 	return false
 }

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	regexDNSMsg = regexp.MustCompile("\\bapplication/dns-message\\b")
+	regexDNSMsg = regexp.MustCompile(`\bapplication/dns-message\b`)
 
 	mimeDNSMsg = "application/dns-message"
 
@@ -19,6 +19,7 @@ var (
 // DNSClient is a DNS client
 type DNSClient interface {
 	String() string
+	ECSDisabled() bool
 	FallbackNoECSEnabled() bool
 	Resolve(*dns.Msg, bool, bool) (*dns.Msg, error)
 }

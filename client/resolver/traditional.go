@@ -55,6 +55,10 @@ func (client *TraditionalDNSClient) String() string {
 	return fmt.Sprintf("dns://%s:%d", client.host, client.port)
 }
 
+func (client *TraditionalDNSClient) ECSDisabled() bool {
+	return client.NoECS
+}
+
 func (client *TraditionalDNSClient) FallbackNoECSEnabled() bool {
 	return client.FallbackNoECS
 }
@@ -70,7 +74,7 @@ func (client *TraditionalDNSClient) Resolve(request *dns.Msg, useTCP bool, force
 	ecs.SetECS(request, forceNoECS || client.NoECS, client.CustomECS)
 	res, _, err := c.Exchange(request, client.addresses[randomSource.Intn(len(client.addresses))])
 	if err != nil {
-		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
+		return getEmptyErrorResponse(request), fmt.Errorf("failed to resolve %s using %s: %s", request.Question[0].Name, client.String(), err.Error())
 	}
 	// https://github.com/miekg/dns/issues/1145
 	res.Id = request.Id

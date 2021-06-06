@@ -7,8 +7,9 @@ deploy:
   provider: releases
   overwrite: true
   file:
-    - build/secure-dns
+    - build/secure-dns*
   on:
     tags: true
+    condition: $TRAVIS_GO_VERSION =~ ^1\.
   token:
     secure: h6AFghcLLFJzasedVtgohNR1yG5A6WX4rw93+8PmxVh3cMdDACbAVXd5hR+CzaNKk/rXJhjvdMdSvm+g+siXi+xTv+wzZw9BIs8/upRC0oLaMSGBGI5J62KrfRyQsRCOUgiyNkp1yAuYoODFqONVTPm1Y1S6jFIOMw94NIl2QXnmIJ9af4USaa5DttZFlJcBvtQKHmgNL8o3Z1HK96uKBhlf6YJWU7yOgT83DRHx5+UqBdp6LMgWCMQzqkkCnjolu1Sq7EljP+Eu+wrCNKWO8hH1mWJKspn7NFgS3jvMAeHRGu5yVA0kiCg9/xLG/rNZGM3GBBMp62dHfe0vYlm9SEBUyBAUGtmR/NS6IQrsWbx82IsPbIYLGoQtX8ZBk5HGgEtQ8GTXWhxwVTS1v/GszUnnJQrYhJVeWMGIsAqcIKb1pjTG83QRWpjP4orfjsEAy0XKODZkjHz2f8EkJq7SYrDsZTtVy31Tfy8tF0O9t8Y9tv2ORSR0nmPFul4tsSsyx33iVQzUGwQMqJ5lRWoeJNwUK/XTQwBeX6xVR1s9CudHYmrPhi2eojg7mtUgSn4iQHvdl6Wri/COUu9oR/0qaOWZ28qa1r8Sg5cij4F9haAVyO0hZ+Tlb92pc1PXy27HWyfzdiHx0hSp4g/jdAI0aWVdx4TZilLc0T8/Eo6VnVg=

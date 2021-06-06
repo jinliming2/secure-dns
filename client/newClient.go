@@ -30,7 +30,7 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client, 
 	case config.SelectorWRandom:
 		client.upstream = &selector.WRandom{}
 	default:
-		err = fmt.Errorf("No such round robin: %s", conf.Config.RoundRobin)
+		err = fmt.Errorf("no such round robin: %s", conf.Config.RoundRobin)
 		return
 	}
 

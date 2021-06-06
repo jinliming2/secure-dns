@@ -65,6 +65,10 @@ func (client *TLSDNSClient) String() string {
 	return fmt.Sprintf("tls://%s:%d", client.host, client.port)
 }
 
+func (client *TLSDNSClient) ECSDisabled() bool {
+	return client.NoECS
+}
+
 func (client *TLSDNSClient) FallbackNoECSEnabled() bool {
 	return client.FallbackNoECS
 }
@@ -74,7 +78,7 @@ func (client *TLSDNSClient) Resolve(request *dns.Msg, useTCP bool, forceNoECS bo
 	ecs.SetECS(request, forceNoECS || client.NoECS, client.CustomECS)
 	res, _, err := client.client.Exchange(request, client.addresses[randomSource.Intn(len(client.addresses))])
 	if err != nil {
-		return getEmptyErrorResponse(request), fmt.Errorf("Failed to resolve %s using %s", request.Question[0].Name, client.String())
+		return getEmptyErrorResponse(request), fmt.Errorf("failed to resolve %s using %s: %s", request.Question[0].Name, client.String(), err.Error())
 	}
 	// https://github.com/miekg/dns/issues/1145
 	res.Id = request.Id
