@@ -10,7 +10,7 @@ LDFLAGS="-X '${PACKAGE}/versions.VERSION=${VERSION} (${DATE})' -X '${PACKAGE}/ve
 
 all: clean build
 
-build: linux_amd64 linux_arm64 darwin_amd64 darwin_arm64 windows_386 windows_amd64 windows_arm64
+build: linux_amd64 linux_arm64 darwin_amd64 darwin_arm64 windows_386 windows_amd64
 
 linux_amd64:
 	GOOS=linux \
@@ -41,11 +41,6 @@ windows_amd64:
 	GOOS=windows \
 	GOARCH=amd64 \
 	go build -v -ldflags ${LDFLAGS} -o build/secure-dns-windows-amd64.exe
-
-windows_arm64:
-	GOOS=windows \
-	GOARCH=arm64 \
-	go build -v -ldflags ${LDFLAGS} -o build/secure-dns-windows-arm64.exe
 
 clean:
 	rm build/secure-dns-* || true
