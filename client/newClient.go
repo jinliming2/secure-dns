@@ -18,7 +18,7 @@ import (
 // NewClient returns a client with dnsClients
 func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client, err error) {
 	timeout := time.Duration(*conf.Config.Timeout) * time.Second
-	client = &Client{logger: logger, timeout: timeout}
+	client = &Client{logger: logger, timeout: timeout, cacheNoAnswer: conf.Config.CacheNoAnswer}
 
 	switch conf.Config.RoundRobin {
 	case config.SelectorClock:

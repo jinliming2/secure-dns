@@ -104,24 +104,28 @@ func (client *Client) handlerFunc(w dns.ResponseWriter, r *dns.Msg, useTCP bool)
 	}
 	w.WriteMsg(response)
 
-	if client.cacher != nil && err == nil && response.Rcode == dns.RcodeSuccess && (len(response.Answer)+len(response.Ns)+len(response.Extra)) > 0 {
+	if client.cacher != nil && err == nil {
 		var minttl uint32
-		for _, answer := range response.Answer {
-			ttl := answer.Header().Ttl
-			if ttl > 0 && (minttl == 0 || ttl < minttl) {
-				minttl = ttl
+		if response.Rcode == dns.RcodeNameError || len(response.Answer)+len(response.Ns)+len(response.Extra) == 0 {
+			minttl = client.cacheNoAnswer
+		} else if response.Rcode == dns.RcodeSuccess {
+			for _, answer := range response.Answer {
+				ttl := answer.Header().Ttl
+				if ttl > 0 && (minttl == 0 || ttl < minttl) {
+					minttl = ttl
+				}
 			}
-		}
-		for _, ns := range response.Ns {
-			ttl := ns.Header().Ttl
-			if ttl > 0 && (minttl == 0 || ttl < minttl) {
-				minttl = ttl
+			for _, ns := range response.Ns {
+				ttl := ns.Header().Ttl
+				if ttl > 0 && (minttl == 0 || ttl < minttl) {
+					minttl = ttl
+				}
 			}
-		}
-		for _, extra := range response.Extra {
-			ttl := extra.Header().Ttl
-			if ttl > 0 && (minttl == 0 || ttl < minttl) {
-				minttl = ttl
+			for _, extra := range response.Extra {
+				ttl := extra.Header().Ttl
+				if ttl > 0 && (minttl == 0 || ttl < minttl) {
+					minttl = ttl
+				}
 			}
 		}
 		if minttl > 0 {

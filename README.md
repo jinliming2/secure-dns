@@ -70,6 +70,7 @@ TXT = [ 'text' ]
 | listen | `string[]` | ✔️ | | host and port to listen |
 | timeout | `uint` | | `5` | timeout in seconds for each DNS request, 0 to disable |
 | round_robin | `string` | | `'clock'` | upstream select round robin, can only be `'clock'`, `'random'`, `'wrandom'` or `'swrr'` |
+| cache_no_answer | `uint` | | `0` | Cache response for specified seconds even if query returns with no specified answer or domain was not exists |
 | no_cache | `boolean` | | `false` | disable global DNS result cache |
 | custom_ecs | `string[]` | | | custom EDNS Subnet to override |
 | fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |

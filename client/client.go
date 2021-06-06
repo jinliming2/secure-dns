@@ -23,7 +23,8 @@ type Client struct {
 
 	servers []*dns.Server
 
-	cacher *cache.Cache
+	cacher        *cache.Cache
+	cacheNoAnswer uint32
 }
 
 func startDNSServer(server *dns.Server, logger *zap.SugaredLogger, results chan error) {

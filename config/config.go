@@ -23,10 +23,11 @@ type typeCustomSpecified struct {
 }
 
 type typeGeneralConfig struct {
-	Listen     []string  `toml:"listen"`
-	Timeout    *uint     `toml:"timeout"`     // seconds
-	RoundRobin Selectors `toml:"round_robin"` // default: clock
-	NoCache    bool      `toml:"no_cache"`
+	Listen        []string  `toml:"listen"`
+	Timeout       *uint     `toml:"timeout"`     // seconds
+	RoundRobin    Selectors `toml:"round_robin"` // default: clock
+	CacheNoAnswer uint32    `toml:"cache_no_answer"`
+	NoCache       bool      `toml:"no_cache"`
 	DNSSettings
 }
 
