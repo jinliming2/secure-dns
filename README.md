@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/jinliming2/secure-dns.svg?branch=master)](https://travis-ci.com/jinliming2/secure-dns)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jinliming2/secure-dns)](https://goreportcard.com/report/github.com/jinliming2/secure-dns)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns?ref=badge_shield)
 
 A DNS client which implemented DoT and DoH, with load balancing, DNS cache, custom ECS and HOSTs.
 
@@ -207,3 +208,7 @@ TXT = ['this matches example.com']
 A = ['0.0.0.0']
 TXT = ['this matches example.com a.example.com a.b.example.com a.b.c.example.com ...']
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns?ref=badge_large)
