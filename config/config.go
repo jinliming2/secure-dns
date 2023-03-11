@@ -63,6 +63,7 @@ type typeTraditional struct {
 
 // Config described user configuration
 type Config struct {
+	ConfigFile  string                         `toml:"-"`
 	Config      typeGeneralConfig              `toml:"config"`
 	HTTPS       []typeUpstreamHTTPS            `toml:"https"`
 	TLS         []typeUpstreamTLS              `toml:"tls"`
@@ -72,7 +73,7 @@ type Config struct {
 
 // LoadConfig from configuration file
 func LoadConfig(configPath string) (config *Config, err error) {
-	config = &Config{}
+	config = &Config{ConfigFile: configPath}
 	_, err = toml.DecodeFile(configPath, &config)
 	if err != nil {
 		return

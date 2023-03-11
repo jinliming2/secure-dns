@@ -1,6 +1,6 @@
 # Secure DNS
 
-[![Build Status](https://travis-ci.com/jinliming2/secure-dns.svg?branch=master)](https://travis-ci.com/jinliming2/secure-dns)
+[![Build Status](https://app.travis-ci.com/jinliming2/secure-dns.svg?branch=master)](https://app.travis-ci.com/jinliming2/secure-dns)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jinliming2/secure-dns)](https://goreportcard.com/report/github.com/jinliming2/secure-dns)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns?ref=badge_shield)
 
@@ -8,15 +8,16 @@ A DNS client which implemented DoT and DoH, with load balancing, DNS cache, cust
 
 ## Table of Content
 
-* [Table of Content](#table-of-content)
-* [Config](#config)
-   * [Example](#example)
-   * [Basic config](#basic-config)
-   * [Upstream DNS](#upstream-dns)
-      * [Traditional DNS](#traditional-dns)
-      * [DNS over TLS (DoT)](#dns-over-tls-dot)
-      * [DNS over HTTPS (DoH)](#dns-over-https-doh)
-   * [Custom Hosts](#custom-hosts)
+- [Table of Content](#table-of-content)
+- [Config](#config)
+  - [Example](#example)
+  - [Basic config](#basic-config)
+  - [Upstream DNS](#upstream-dns)
+    - [Traditional DNS](#traditional-dns)
+    - [DNS over TLS (DoT)](#dns-over-tls-dot)
+    - [DNS over HTTPS (DoH)](#dns-over-https-doh)
+  - [Custom Hosts](#custom-hosts)
+    - [Import domain list from file](#import-domain-list-from-file)
 
 ## Config
 
@@ -66,21 +67,22 @@ TXT = [ 'text' ]
 
 ### Basic config
 
-| Key | Type | Required | Default | Description |
-|:---|:---:|:---:|:---:|:---|
-| listen | `string[]` | ✔️ | | host and port to listen |
-| timeout | `uint` | | `5` | timeout in seconds for each DNS request, 0 to disable |
-| round_robin | `string` | | `'clock'` | upstream select round robin, can only be `'clock'`, `'random'`, `'wrandom'` or `'swrr'` |
-| cache_no_answer | `uint` | | `0` | Cache response for specified seconds even if query returns with no specified answer or domain was not exists |
-| no_cache | `boolean` | | `false` | disable global DNS result cache |
-| custom_ecs | `string[]` | | | custom EDNS Subnet to override |
-| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
-| no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
-| user_agent | `string` | | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS |
-| no_user_agent | `boolean` | | `false` | do not send User-Agent header in DNS over HTTPS |
-| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
+| Key                |    Type    | Required |                             Default                             | Description                                                                                                  |
+| :----------------- | :--------: | :------: | :-------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------- |
+| listen             | `string[]` |    ✔️    |                                                                 | host and port to listen                                                                                      |
+| timeout            |   `uint`   |          |                               `5`                               | timeout in seconds for each DNS request, 0 to disable                                                        |
+| round_robin        |  `string`  |          |                            `'clock'`                            | upstream select round robin, can only be `'clock'`, `'random'`, `'wrandom'` or `'swrr'`                      |
+| cache_no_answer    |   `uint`   |          |                               `0`                               | Cache response for specified seconds even if query returns with no specified answer or domain was not exists |
+| no_cache           | `boolean`  |          |                             `false`                             | disable global DNS result cache                                                                              |
+| custom_ecs         | `string[]` |          |                                                                 | custom EDNS Subnet to override                                                                               |
+| fallback_no_ecs    | `boolean`  |          |                             `false`                             | fallback to no_ecs=`true` when DNS request got no answer                                                     |
+| no_ecs             | `boolean`  |          |                             `false`                             | disable EDNS Subnet and remove EDNS Subnet from DNS request                                                  |
+| user_agent         |  `string`  |          | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS                                                                          |
+| no_user_agent      | `boolean`  |          |                             `false`                             | do not send User-Agent header in DNS over HTTPS                                                              |
+| no_single_inflight | `boolean`  |          |                             `false`                             | do not suppress multiple same outstanding queries                                                            |
 
 Example:
+
 ```toml
 [config]
 listen = ['[::1]:53', '127.0.0.1:53']
@@ -92,20 +94,21 @@ no_user_agent = true
 
 #### Traditional DNS
 
-| Key | Type | Required | Default | Description |
-|:---|:---:|:---:|:---:|:---|
-| host | `string[]` | ✔️ | | ip addresses |
-| port | `uint16` | | `53` | port to use |
-| bootstrap | `boolean` | | `false` | mark this is a bootstrap DNS server, only used to resolve names for DNS over HTTPS and DNS over TLS |
-| weight | `uint` | | `1` | weight used for weighted round robin, should > 0 |
-| domain | `string[]` | | | mark this DNS server only used to resolve specified domain names |
-| suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
-| custom_ecs | `string[]` | | | custom EDNS Subnet to override |
-| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
-| no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
-| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
+| Key                |    Type    | Required | Default | Description                                                                                         |
+| :----------------- | :--------: | :------: | :-----: | :-------------------------------------------------------------------------------------------------- |
+| host               | `string[]` |    ✔️    |         | ip addresses                                                                                        |
+| port               |  `uint16`  |          |  `53`   | port to use                                                                                         |
+| bootstrap          | `boolean`  |          | `false` | mark this is a bootstrap DNS server, only used to resolve names for DNS over HTTPS and DNS over TLS |
+| weight             |   `uint`   |          |   `1`   | weight used for weighted round robin, should > 0                                                    |
+| domain             | `string[]` |          |         | mark this DNS server only used to resolve specified domain names                                    |
+| suffix             | `string[]` |          |         | mark this DNS server only used to resolve domain names with specified suffixes                      |
+| custom_ecs         | `string[]` |          |         | custom EDNS Subnet to override                                                                      |
+| fallback_no_ecs    | `boolean`  |          | `false` | fallback to no_ecs=`true` when DNS request got no answer                                            |
+| no_ecs             | `boolean`  |          | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request                                         |
+| no_single_inflight | `boolean`  |          | `false` | do not suppress multiple same outstanding queries                                                   |
 
 Example:
+
 ```toml
 [[traditional]]
 host = ['8.8.4.4', '8.8.8.8']
@@ -123,20 +126,21 @@ suffix = [
 
 #### DNS over TLS (DoT)
 
-| Key | Type | Required | Default | Description |
-|:---|:---:|:---:|:---:|:---|
-| host | `string[]` | ✔️ | | ip addresses or host names |
-| port | `uint16` | | `853` | port to use |
-| hostname | `string` | | | hostname for ip addresses |
-| weight | `uint` | | `1` | weight used for weighted round robin, should > 0 |
-| domain | `string[]` | | | mark this DNS server only used to resolve specified domain names |
-| suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
-| custom_ecs | `string[]` | | | custom EDNS Subnet to override |
-| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
-| no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
-| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
+| Key                |    Type    | Required | Default | Description                                                                    |
+| :----------------- | :--------: | :------: | :-----: | :----------------------------------------------------------------------------- |
+| host               | `string[]` |    ✔️    |         | ip addresses or host names                                                     |
+| port               |  `uint16`  |          |  `853`  | port to use                                                                    |
+| hostname           |  `string`  |          |         | hostname for ip addresses                                                      |
+| weight             |   `uint`   |          |   `1`   | weight used for weighted round robin, should > 0                               |
+| domain             | `string[]` |          |         | mark this DNS server only used to resolve specified domain names               |
+| suffix             | `string[]` |          |         | mark this DNS server only used to resolve domain names with specified suffixes |
+| custom_ecs         | `string[]` |          |         | custom EDNS Subnet to override                                                 |
+| fallback_no_ecs    | `boolean`  |          | `false` | fallback to no_ecs=`true` when DNS request got no answer                       |
+| no_ecs             | `boolean`  |          | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request                    |
+| no_single_inflight | `boolean`  |          | `false` | do not suppress multiple same outstanding queries                              |
 
 Example:
+
 ```toml
 [[tls]]
 host = ['dns.google']
@@ -153,25 +157,26 @@ domain = [
 
 #### DNS over HTTPS (DoH)
 
-| Key | Type | Required | Default | Description |
-|:---|:---:|:---:|:---:|:---|
-| host | `string[]` | ✔️ | | ip addresses or host names |
-| port | `uint16` | | `443` | port to use |
-| hostname | `string` | | | hostname for ip addresses |
-| path | `string` | | `'/dns-query'` | HTTP URI path to use |
-| google | `boolean` | | `false` | use google's DoH query structure |
-| cookie | `boolean` | | `false` | enable cookie support for this server |
-| weight | `uint` | | `1` | weight used for weighted round robin, should > 0 |
-| domain | `string[]` | | | mark this DNS server only used to resolve specified domain names |
-| suffix | `string[]` | | | mark this DNS server only used to resolve domain names with specified suffix |
-| custom_ecs | `string[]` | | | custom EDNS Subnet to override |
-| fallback_no_ecs | `boolean` | | `false` | fallback to no_ecs=`true` when DNS request got no answer |
-| no_ecs | `boolean` | | `false` | disable EDNS Subnet and remove EDNS Subnet from DNS request |
-| user_agent | `string` | | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS |
-| no_user_agent | `boolean` | | `false` | do not send User-Agent header in DNS over HTTPS |
-| no_single_inflight | `boolean` | | `false` | do not suppress multiple same outstanding queries |
+| Key                |    Type    | Required |                             Default                             | Description                                                                    |
+| :----------------- | :--------: | :------: | :-------------------------------------------------------------: | :----------------------------------------------------------------------------- |
+| host               | `string[]` |    ✔️    |                                                                 | ip addresses or host names                                                     |
+| port               |  `uint16`  |          |                              `443`                              | port to use                                                                    |
+| hostname           |  `string`  |          |                                                                 | hostname for ip addresses                                                      |
+| path               |  `string`  |          |                         `'/dns-query'`                          | HTTP URI path to use                                                           |
+| google             | `boolean`  |          |                             `false`                             | use google's DoH query structure                                               |
+| cookie             | `boolean`  |          |                             `false`                             | enable cookie support for this server                                          |
+| weight             |   `uint`   |          |                               `1`                               | weight used for weighted round robin, should > 0                               |
+| domain             | `string[]` |          |                                                                 | mark this DNS server only used to resolve specified domain names               |
+| suffix             | `string[]` |          |                                                                 | mark this DNS server only used to resolve domain names with specified suffixes |
+| custom_ecs         | `string[]` |          |                                                                 | custom EDNS Subnet to override                                                 |
+| fallback_no_ecs    | `boolean`  |          |                             `false`                             | fallback to no_ecs=`true` when DNS request got no answer                       |
+| no_ecs             | `boolean`  |          |                             `false`                             | disable EDNS Subnet and remove EDNS Subnet from DNS request                    |
+| user_agent         |  `string`  |          | `'secure-dns/VERSION https://github.com/jinliming2/secure-dns'` | User-Agent field for DNS over HTTPS                                            |
+| no_user_agent      | `boolean`  |          |                             `false`                             | do not send User-Agent header in DNS over HTTPS                                |
+| no_single_inflight | `boolean`  |          |                             `false`                             | do not suppress multiple same outstanding queries                              |
 
 Example:
+
 ```toml
 [[https]]
 host = ['dns.google']
@@ -195,6 +200,7 @@ domain = [
 ### Custom Hosts
 
 Example:
+
 ```toml
 [hosts.'example.com']
 A = [
@@ -207,8 +213,34 @@ TXT = ['this matches example.com']
 [hosts.'*.example.com']
 A = ['0.0.0.0']
 TXT = ['this matches example.com a.example.com a.b.example.com a.b.c.example.com ...']
+
+[hosts.'*.blocked.domain']
+# Answered with no record
 ```
 
+#### Import domain list from file
+
+When defining hosts, you can use the `=#` or `$#` prefix followed by a relative or absolute file path to import the domain list from the specified file. The file path is related to the TOML config file path.
+
+The domain list file is a plain text file that contains domains in each line, split by the `\n` character. Lines starting with the `#` character are ignored.
+
+`=#` means to use the domain list to resolve specified domain names.
+
+`$#` means to use the domain list to resolve domain names with specified suffixes.
+
+Example:
+
+```toml
+[hosts.'$#./domains.txt']
+A = [ '127.0.0.1' ]
+
+[hosts.'=#./domains.txt']
+
+[hosts.'$#/etc/secure-dns/domains.txt']
+
+[hosts.'=#/mnt/txt']
+```
 
 ## License
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjinliming2%2Fsecure-dns?ref=badge_large)

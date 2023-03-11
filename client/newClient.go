@@ -3,8 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -38,8 +40,35 @@ func NewClient(logger *zap.SugaredLogger, conf *config.Config) (client *Client, 
 
 	for domain, b := range conf.Hosts {
 		c := resolver.NewHostsDNSClient(b)
-		if strings.HasPrefix(domain, "*.") {
-			domain = strings.TrimLeft(domain, "*.")
+		if strings.HasPrefix(domain, "$#") || strings.HasPrefix(domain, "=#") {
+			fileName := domain[2:]
+			if filepath.IsLocal(fileName) {
+				fileName = filepath.Join(filepath.Dir(conf.ConfigFile), fileName)
+			}
+			var data []byte
+			data, err = ioutil.ReadFile(fileName)
+			if err != nil {
+				return
+			}
+			lines := strings.Split(string(data), "\n")
+			domains := lines[:0]
+			for _, line := range lines {
+				trimLine := strings.TrimSpace(line)
+				if !strings.HasPrefix(trimLine, "#") {
+					domains = append(domains, trimLine)
+				}
+			}
+			if strings.HasPrefix(domain, "$#") {
+				logger.Debugf("new HOSTS resolver: %d record(s) from file %s (for suffix match)", len(domains), fileName)
+				cr := newCustomResolver(c, []string{}, domains)
+				client.custom = append(client.custom, cr)
+			} else {
+				logger.Debugf("new HOSTS resolver: %d record(s) from file %s", len(domains), fileName)
+				cr := newCustomResolver(c, domains, []string{})
+				client.custom = append(client.custom, cr)
+			}
+		} else if strings.HasPrefix(domain, "*.") {
+			domain = domain[2:]
 			logger.Debugf("new HOSTS resolver: %s (for wildcard domain)", domain)
 			cr := newCustomResolver(c, []string{}, []string{domain})
 			client.custom = append(client.custom, cr)
