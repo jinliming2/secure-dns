@@ -43,7 +43,9 @@ jobs:
           name: secure-dns-releases
 
       - name: Upload release
+        shell: bash
         run: |
+          set -x
           curl -fSsL \
             -o release.json \
             -H "Accept: application/vnd.github+json" \
@@ -56,12 +58,11 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/releases/assets/%
-          RELEASE_ID=`jq '.id'`
           ls secure-dns-* | xargs -I % curl -fSsL \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Content-Type: application/octet-stream" \
-            https://uploads.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=% \
+            https://uploads.github.com/repos/${{ github.repository }}/releases/`jq '.id'`/assets?name=% \
             --data-binary @%
