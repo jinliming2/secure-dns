@@ -43,7 +43,6 @@ jobs:
           name: secure-dns-releases
 
       - name: Upload release
-        shell: bash
         run: |
           curl -fSsL \
             -o release.json
