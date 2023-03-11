@@ -3,7 +3,9 @@ name: Build release
 on:
   - push
   - pull_request
-  - release
+  - release:
+    types:
+      - published
 
 jobs:
   build:
@@ -32,7 +34,7 @@ jobs:
 
   release:
     needs: build
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' && github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: write
